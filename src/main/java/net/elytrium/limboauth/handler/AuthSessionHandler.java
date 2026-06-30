@@ -21,7 +21,6 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.google.common.primitives.Longs;
 import com.j256.ormlite.dao.Dao;
 import com.velocitypowered.api.proxy.Player;
-import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
 import dev.samstevens.totp.code.CodeVerifier;
 import dev.samstevens.totp.code.DefaultCodeGenerator;
 import dev.samstevens.totp.code.DefaultCodeVerifier;
@@ -43,6 +42,7 @@ import net.elytrium.limboapi.api.LimboSessionHandler;
 import net.elytrium.limboapi.api.player.LimboPlayer;
 import net.elytrium.limboauth.LimboAuth;
 import net.elytrium.limboauth.Settings;
+import net.elytrium.limboauth.compat.VelocityProtocolCompat;
 import net.elytrium.limboauth.event.PostAuthorizationEvent;
 import net.elytrium.limboauth.event.PostRegisterEvent;
 import net.elytrium.limboauth.event.TaskEvent;
@@ -273,9 +273,8 @@ public class AuthSessionHandler implements LimboSessionHandler {
 
   @Override
   public void onGeneric(Object packet) {
-    if (Settings.IMP.MAIN.MOD.ENABLED && packet instanceof PluginMessagePacket) {
-      PluginMessagePacket pluginMessage = (PluginMessagePacket) packet;
-      String channel = pluginMessage.getChannel();
+    if (Settings.IMP.MAIN.MOD.ENABLED && VelocityProtocolCompat.isPluginMessage(packet)) {
+      String channel = VelocityProtocolCompat.getPluginMessageChannel(packet);
 
       if (channel.equals("MC|Brand") || channel.equals("minecraft:brand")) {
         // Minecraft can't handle the plugin message immediately after going to the PLAY
@@ -296,7 +295,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
           return;
         }
 
-        ByteBuf data = pluginMessage.content();
+        ByteBuf data = VelocityProtocolCompat.getPluginMessageContent(packet);
 
         if (data.readableBytes() < 16) {
           this.checkBruteforceAttempts();

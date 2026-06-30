@@ -27,7 +27,6 @@ import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import com.velocitypowered.proxy.connection.MinecraftConnection;
 import com.velocitypowered.proxy.connection.backend.VelocityServerConnection;
-import com.velocitypowered.proxy.protocol.packet.PluginMessagePacket;
 import io.netty.buffer.Unpooled;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
@@ -39,6 +38,7 @@ import net.elytrium.limboauth.backend.type.LongDatabaseEndpoint;
 import net.elytrium.limboauth.backend.type.StringDatabaseEndpoint;
 import net.elytrium.limboauth.backend.type.StringEndpoint;
 import net.elytrium.limboauth.backend.type.UnknownEndpoint;
+import net.elytrium.limboauth.compat.VelocityProtocolCompat;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 
 public class BackendEndpointsListener {
@@ -98,7 +98,7 @@ public class BackendEndpointsListener {
     if (connection != null && !connection.isClosed()) {
       ByteArrayDataOutput output = ByteStreams.newDataOutput();
       endpoint.write(output);
-      connection.write(new PluginMessagePacket(API_CHANNEL.getId(), Unpooled.wrappedBuffer(output.toByteArray())));
+      connection.write(VelocityProtocolCompat.createPluginMessage(API_CHANNEL.getId(), Unpooled.wrappedBuffer(output.toByteArray())));
     }
   }
 }
