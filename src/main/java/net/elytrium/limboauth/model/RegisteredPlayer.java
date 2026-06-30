@@ -32,11 +32,11 @@ public class RegisteredPlayer {
   public static final String NICKNAME_FIELD = "nick";
   public static final String LOWERCASE_NICKNAME_FIELD = "subname";
   public static final String HASH_FIELD = "password";
-  public static final String IP_FIELD = "authme_regip";
+  public static final String IP_FIELD = "limbo_regip";
   public static final String LOGIN_IP_FIELD = "ip";
   public static final String TOTP_TOKEN_FIELD = "totp";
-  public static final String REG_DATE_FIELD = "authme_created_at";
-  public static final String LOGIN_DATE_FIELD = "authme_lastlogin";
+  public static final String REG_DATE_FIELD = "limbo_created_at";
+  public static final String LOGIN_DATE_FIELD = "limbo_lastlogin";
   public static final String UUID_FIELD = "uuid";
   public static final String PREMIUM_UUID_FIELD = "premiumuuid";
   public static final String TOKEN_ISSUED_AT_FIELD = "issuedtime";
