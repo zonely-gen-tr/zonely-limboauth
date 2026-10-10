@@ -1,63 +1,91 @@
-<img src="https://elytrium.net/src/img/elytrium.webp" alt="Elytrium" align="right">
+# Zonely LimboAuth
 
-# LimboAuth
+[![Build and test](https://github.com/zonely-gen-tr/zonely-limboauth/actions/workflows/build.yml/badge.svg)](https://github.com/zonely-gen-tr/zonely-limboauth/actions/workflows/build.yml)
 
-[![Join our Discord](https://img.shields.io/discord/775778822334709780.svg?logo=discord&label=Discord)](https://ely.su/discord)
-![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/4iChqdl8?logo=data%3Aimage%2Fpng%3Bbase64%2CiVBORw0KGgoAAAANSUhEUgAAAIkAAAA8CAMAAABl%2FWk9AAABAlBMVEUAAAAApcwAqM4Apc4Ap88Apc4Apc4AqM0Aps0Ap84Apc0ApswApc4Aps0Ap80Aps4Ap80Aps0Ap84Aps0Aps4Aps0EqdAHrNMKrtQNsdcRtNoVttwWtt0buuAbuuAbuuAauuAbuuEauuAbu%2BAbuuAbuuEbu%2BAbuuEau%2BAbuuAbuuEau%2BEauuAbuuAbueAbuuAau%2BEbuuAauuAauuAbuuEauuEau%2BAbuuAau%2BEbu%2BAWtt0bvOAau%2BEZuOEYt94cvOEUtt8YudsVsdYAn90A%2F%2F8CqM8Ap84Bp84Aps0Ap80Aps0Aps0Aps0auuAauuAbuuAbuuAauuAauuAbuuAAps0buuCTPBtaAAAAVHRSTlMAIhwzOj5ESk1aZnB3f4iTnKWqrrW7xMDCxdDa3%2BDc2tbMxcC8uLOvp6KflpCHgXl1b15ZVE5EQDovKSQhHRcRDAgFAgHL1Nne5e30%2FPj08e3q5vwu6%2BLEAAADTUlEQVR42sXXhXLDPAzAcY2ZGcrMzAzjYhK9%2F6N8YA8zW62Xwu9gvOp6yt8JTKmSjXnHA18Jlqn63xAj5IbLGqWWi%2FvH%2BJ2jufwh3oUXPYSGMmlYjFLcN0aRkc%2BJzKACi5DUUSzQBMj22aeuNsxfUTaIjS1qBJkozF3XRS9HBrkczFsGJVwd9vMEcqMazFfLhhIF9vO2Hd%2B5T05n4GAVJJIoEQAmhZ%2BujFl4lYxSH6KYXmY%2Fb4y%2BfevBmIVDEIqiRFTw8%2FGrMQMnIFLuo9iwzg%2FCnz%2B%2F7RnW7YFIACWSwASRm%2BGqXLZAoIASthaPHprojwbh7Xh%2Fkr3NtlrUMsC40UwjVuW1DH%2BVlkaty36exd9uDKn9OUStyKPmQBN6VbbgrxIToybSf5rle0JHrV%2F5iJrQ%2FZtsT1bgbyJTRU1lVd6OdoV23kdc2dnoqkRNa3xETebSUNRjNdvrGcaFoCZ%2BFBsVP6ImNXhRHmUVYKVnWiYyarozVgemioRrQ9U2wA775BxMOr%2Bj5gimCk34kELCnaFqDWCdfXJER80eTLIhvokh4dZQwt%2BJ7jm%2FvoRR40PkG3R%2F6ZXtPV5McrbXZqXcOz1aEUdtGONDiNQHKHXPdo97WQPOStSGJeUCcw%2BzSPz3aEXgt2atBVzHO82W9NpgCX8ATpiGKKaCDh37%2FjIwdQ2F9B8HTx0s4Tvg%2Bz5EyKnjuyFvWzevTxH7Q7DEh0yyYx6C0%2BrAxKYJ7PHGyh%2B1AKDUR8bm5UOYefnjX9tN3J9Y1ztpAiSRlgCmNkKz8ZsxO0cAXT%2BS9CIwOSpq1r3wC4NkawATIaJm3TM7i3Uk%2Bbt8VVzyqFl38H5h0FLAVIaSqFn3fNDmDfUgqV8CJiOJGu14pQNTq42QZG8CE5JEjXIKXVCQQ1oQmKZN%2Fa5xU%2FkgpKWBSapHbQPUtF1IGpT5pqhH7QgUVYZIcrZ4U5Sj1ttvgZo00vxN6KZ1ZO6UotZ7NnvYbwMhjLSBxza7qJ0AoelEwqyjVgdCaYAEMmrqykBJ4VRuZpH3DpACOIXB6wwGWQNaw4YT9dOblq21YJJiH0maP1GDxUigzMgdy9VhcTo%2B%2FG3ojqbLsGh1jRhisQp95Ma%2BWK4Gy1T0DLQlDPEv1X2Xr4VYWO8AAAAASUVORK5CYII%3D)
-![Modrinth Downloads](https://img.shields.io/modrinth/dt/4iChqdl8?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxNCIgdmlld0JveD0iMCAwIDUxMiA1MTQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI%2BCiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01MDMuMTYgMzIzLjU2QzUxNC41NSAyODEuNDcgNTE1LjMyIDIzNS45MSA1MDMuMiAxOTAuNzZDNDY2LjU3IDU0LjIyOTkgMzI2LjA0IC0yNi44MDAxIDE4OS4zMyA5Ljc3OTkxQzgzLjgxMDEgMzguMDE5OSAxMS4zODk5IDEyOC4wNyAwLjY4OTk0MSAyMzAuNDdINDMuOTlDNTQuMjkgMTQ3LjMzIDExMy43NCA3NC43Mjk4IDE5OS43NSA1MS43MDk4QzMwNi4wNSAyMy4yNTk4IDQxNS4xMyA4MC42Njk5IDQ1My4xNyAxODEuMzhMNDExLjAzIDE5Mi42NUMzOTEuNjQgMTQ1LjggMzUyLjU3IDExMS40NSAzMDYuMyA5Ni44MTk4TDI5OC41NiAxNDAuNjZDMzM1LjA5IDE1NC4xMyAzNjQuNzIgMTg0LjUgMzc1LjU2IDIyNC45MUMzOTEuMzYgMjgzLjggMzYxLjk0IDM0NC4xNCAzMDguNTYgMzY5LjE3TDMyMC4wOSA0MTIuMTZDMzkwLjI1IDM4My4yMSA0MzIuNCAzMTAuMyA0MjIuNDMgMjM1LjE0TDQ2NC40MSAyMjMuOTFDNDY4LjkxIDI1Mi42MiA0NjcuMzUgMjgxLjE2IDQ2MC41NSAzMDguMDdMNTAzLjE2IDMyMy41NloiIGZpbGw9IiMxYmQ5NmEiLz4KICA8cGF0aCBkPSJNMzIxLjk5IDUwNC4yMkMxODUuMjcgNTQwLjggNDQuNzUwMSA0NTkuNzcgOC4xMTAxMSAzMjMuMjRDMy44NDAxMSAzMDcuMzEgMS4xNyAyOTEuMzMgMCAyNzUuNDZINDMuMjdDNDQuMzYgMjg3LjM3IDQ2LjQ2OTkgMjk5LjM1IDQ5LjY3OTkgMzExLjI5QzUzLjAzOTkgMzIzLjggNTcuNDUgMzM1Ljc1IDYyLjc5IDM0Ny4wN0wxMDEuMzggMzIzLjkyQzk4LjEyOTkgMzE2LjQyIDk1LjM5IDMwOC42IDkzLjIxIDMwMC40N0M2OS4xNyAyMTAuODcgMTIyLjQxIDExOC43NyAyMTIuMTMgOTQuNzYwMUMyMjkuMTMgOTAuMjEwMSAyNDYuMjMgODguNDQwMSAyNjIuOTMgODkuMTUwMUwyNTUuMTkgMTMzQzI0NC43MyAxMzMuMDUgMjM0LjExIDEzNC40MiAyMjMuNTMgMTM3LjI1QzE1Ny4zMSAxNTQuOTggMTE4LjAxIDIyMi45NSAxMzUuNzUgMjg5LjA5QzEzNi44NSAyOTMuMTYgMTM4LjEzIDI5Ny4xMyAxMzkuNTkgMzAwLjk5TDE4OC45NCAyNzEuMzhMMTc0LjA3IDIzMS45NUwyMjAuNjcgMTg0LjA4TDI3OS41NyAxNzEuMzlMMjk2LjYyIDE5Mi4zOEwyNjkuNDcgMjE5Ljg4TDI0NS43OSAyMjcuMzNMMjI4Ljg3IDI0NC43MkwyMzcuMTYgMjY3Ljc5QzIzNy4xNiAyNjcuNzkgMjUzLjk1IDI4NS42MyAyNTMuOTggMjg1LjY0TDI3Ny43IDI3OS4zM0wyOTQuNTggMjYwLjc5TDMzMS40NCAyNDkuMTJMMzQyLjQyIDI3My44MkwzMDQuMzkgMzIwLjQ1TDI0MC42NiAzNDAuNjNMMjEyLjA4IDMwOC44MUwxNjIuMjYgMzM4LjdDMTg3LjggMzY3Ljc4IDIyNi4yIDM4My45MyAyNjYuMDEgMzgwLjU2TDI3Ny41NCA0MjMuNTVDMjE4LjEzIDQzMS40MSAxNjAuMSA0MDYuODIgMTI0LjA1IDM2MS42NEw4NS42Mzk5IDM4NC42OEMxMzYuMjUgNDUxLjE3IDIyMy44NCA0ODQuMTEgMzA5LjYxIDQ2MS4xNkMzNzEuMzUgNDQ0LjY0IDQxOS40IDQwMi41NiA0NDUuNDIgMzQ5LjM4TDQ4OC4wNiAzNjQuODhDNDU3LjE3IDQzMS4xNiAzOTguMjIgNDgzLjgyIDMyMS45OSA1MDQuMjJaIiBmaWxsPSIjMWJkOTZhIi8%2BCjwvc3ZnPg%3D%3D)
-[![Proxy Stats](https://img.shields.io/bstats/servers/13700?logo=minecraft&label=Servers)](https://bstats.org/plugin/velocity/LimboAuth/13700)
-[![Proxy Stats](https://img.shields.io/bstats/players/13700?logo=minecraft&label=Players)](https://bstats.org/plugin/velocity/LimboAuth/13700)
+Velocity için [Elytrium LimboAuth](https://github.com/Elytrium/LimboAuth) tabanlı, Zonely / AuthMe ortak `userslist` tablosuna uyarlanmış giriş eklentisi. Elytrium'un resmi dağıtımı değildir.
 
-Auth System built in virtual server (Limbo). \
-[Описание и обсуждение на русском языке (spigotmc.ru)](https://spigotmc.ru/resources/limboapi-limboauth-limbofilter-virtualnye-servera-dlja-velocity.715/) \
-[Описание и обсуждение на русском языке (rubukkit.org)](http://rubukkit.org/threads/limboapi-limboauth-limbofilter-virtualnye-servera-dlja-velocity.177904/)
+## Kurulum
 
-Test server: [``ely.su``](https://hotmc.ru/minecraft-server-203216)
+1. [Releases](https://github.com/zonely-gen-tr/zonely-limboauth/releases) bölümünden `limboauth-1.1.15-zonely.1.jar` ve **Velocity sürümünüze ait** LimboAPI JAR'ını indirin.
+2. İki JAR'ı Velocity proxy'nin `plugins/` klasörüne koyun. Eski LimboAPI / LimboAuth dosyalarını buradan çıkarın; aynı eklentinin iki sürümünü birlikte yüklemeyin.
+3. Proxy'yi başlatıp kapatın. Oluşan `plugins/limboauth/config.yml` içindeki `database` bölümünü düzenleyin.
+4. Proxy'yi yeniden başlatın. Logda `limboapi`, `limboauth` ve `Done` görünmeli. Deneme hesabıyla kayıt, yanlış parola, yeniden giriş ve lobiye aktarımı kontrol edin.
 
-## See also
+Bunlar proxy eklentileridir; Paper / Spigot sunucusunun `plugins/` klasörüne kurulmaz. Lobi adresini ayrıca `velocity.toml` içindeki `[servers]` bölümünde ayarlayın.
 
-- [LimboFilter](https://github.com/Elytrium/LimboFilter) - Most powerful bot filtering solution for Minecraft proxies. Built with [LimboAPI](https://github.com/Elytrium/LimboAPI).
-- [LimboAPI](https://github.com/Elytrium/LimboAPI) - Library for sending players to virtual servers (called limbo)
+## Velocity / LimboAPI eşleşmeleri
 
-## Features of LimboAuth
+| Velocity | İndirilecek LimboAPI | Java | Upstream kaynak |
+| --- | --- | --- | --- |
+| 3.4.0 | `limboapi-1.1.27-velocity-3.4.0.jar` | 21 | [e638f4d](https://github.com/Elytrium/LimboAPI/commit/e638f4d8e0ef839a36866a3f1f7814f28f1f07fd) |
+| 3.5.1 | `limboapi-1.1.27-velocity-3.5.1.jar` | 25 | [013034d](https://github.com/Elytrium/LimboAPI/commit/013034de70f41f611f388e9c73e1a677e41b7870) |
+| 4.2.0 | `limboapi-1.1.27-velocity-4.2.0.jar` | 25 | [bfef579](https://github.com/Elytrium/LimboAPI/commit/bfef5799f21d73a80155035c3430f6654aa6b9f8) |
 
-- Supports [H2](https://www.h2database.com/html/main.html), [MySQL](https://www.mysql.com/about/), [PostgreSQL](https://www.postgresql.org/about/) [databases](https://en.wikipedia.org/wiki/Database);
-- [Geyser](https://wiki.geysermc.org) [Floodgate](https://wiki.geysermc.org/floodgate/) support;
-- Hybrid ([Floodgate](https://wiki.geysermc.org/floodgate/)/Online/Offline) mode support;
-- Uses [BCrypt](https://en.wikipedia.org/wiki/Bcrypt) - the best [hashing algorithm](https://en.wikipedia.org/wiki/Cryptographic_hash_function) for password;
-- Ability to migrate from [AuthMe](https://www.spigotmc.org/resources/authmereloaded.6269/)-alike plugins;
-- Ability to block weak passwords;
-- [TOTP](https://en.wikipedia.org/wiki/Time-based_one-time_password) [2FA](https://en.wikipedia.org/wiki/Help:Two-factor_authentication) support;
-- Ability to set [UUID](https://minecraft.wiki/w/Universally_unique_identifier) from [database](https://en.wikipedia.org/wiki/Database);
-- Highly customisable config - you can change all the messages the plugin sends, or just disable them;
-- [MCEdit](https://www.mcedit.net/about.html) schematic world loading;
-- And more...
+LimboAuth JAR'ı üç sürüm için ortaktır. LimboAPI JAR'ları farklıdır: test edilen proxy'lerin en yüksek protokolleri sırasıyla **774, 776, 777**. Eski `1.1.26` veya en yeni dev-build dosyasını her proxy'ye kurmak protokol kayıt çakışmasına veya `Please update Velocity` hatasına neden olabilir. Eşleşen API dosyasını kurun.
 
-## Commands and permissions
+Test kapsamı ve kullanılan Velocity dosyalarının SHA-256 değerleri [TESTING.md](TESTING.md) içindedir. Aynı sürüm adını taşıyan başka proxy derlemeleri farklı iç API / protokol desteği içerebilir; destek belgede doğrulanan derlemeler içindir.
 
-### Player
+## MySQL / AuthMe / Zonely
 
-- ***limboauth.commands.destroysession* | /destroysession** - Destroy Account Auth Session Command
-- ***limboauth.commands.premium* | /license or /premium** - Command Makes Account Premium
-- ***limboauth.commands.unregister* | /unregister** - Unregister Account Command
-- ***limboauth.commands.changepassword* | /changepassword** - Change Account Password Command
-- ***limboauth.commands.totp* | /totp** - 2FA Management Command
-- ***limboauth.commands.***\* - Gives All Player Permissions
+AuthMe'nin `DataSource` bölümünü doğrudan yapıştırmayın. LimboAuth'un kendi config dosyasında şu bölüm kullanılır:
 
-### Admin
+```yaml
+database:
+  storage-type: MYSQL
+  hostname: "127.0.0.1:3306"
+  user: "YOUR_DB_USER"
+  password: "YOUR_DB_PASSWORD"
+  database: "YOUR_DB_NAME"
+  connection-parameters: "?useSSL=true"
+```
 
-- ***limboauth.admin.forceunregister* | /forceunregister** - Force Unregister Account Command
-- ***limboauth.admin.forcechangepassword* | /forcechangepassword** - Force Change Account Password Command
-- ***limboauth.admin.forceregister* | /forceregister** - Force Registration Account Command
-- ***limboauth.admin.forcelogin* | /forcelogin** - Force Login Account Command
-- ***limboauth.admin.reload* | /lauth reload** - Reload Plugin Command
-- ***limboauth.admin.***\* - Gives All Admin Permissions
+TLS parametrelerini kendi MySQL sunucunuza göre ayarlayın. DB parolalarını veya gerçek kullanıcı hash'lerini GitHub'a eklemeyin.
 
-## Donation
+| Alan | `userslist` kolonu |
+| --- | --- |
+| Küçük harfle oyuncu adı / hesap anahtarı | `subname` |
+| Görünen oyuncu adı | `nick` |
+| Oyuncu parola özeti | `password` |
+| Kayıt IP / tarihi | `authme_regip`, `authme_created_at` |
+| Son giriş IP / tarihi | `ip`, `authme_lastlogin` |
+| İki aşamalı doğrulama anahtarı | `totp` |
 
-Your donations are really appreciated. Donations wallets/links/cards:
+`userslist.password`, **oyuncunun bcrypt hash'idir**. `$2a$`, `$2b$`, PHP uyumlu `$2y$` ve AuthMe `BCRYPT$` biçimleri desteklenir. Yeni kayıtlar bcrypt kullanır. Ayrı bir salt kolonu gerekmez. Diğer eski hash algoritmaları için `main.migration-hash` ayarını inceleyin.
 
-- MasterCard Debit Card (Tinkoff Bank): ``5536 9140 0599 1975``
-- Qiwi Wallet: ``PFORG`` or [this link](https://my.qiwi.com/form/Petr-YSpyiLt9c6)
-- YooMoney Wallet: ``4100 1721 8467 044`` or [this link](https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=Donation&targets-hint=&default-sum=&button-text=11&payment-type-choice=on&mobile-payment-type-choice=on&hint=&successURL=&quickpay=shop&account=410017218467044)
-- Monero (XMR): 86VQyCz68ApebfFgrzRFAuYLdvd3qG8iT9RHcru9moQkJR9W2Q89Gt3ecFQcFu6wncGwGJsMS9E8Bfr9brztBNbX7Q2rfYS
+Canlı veritabanına geçmeden önce yedek alın: eklenti eksik `uuid`, `premiumuuid`, `issuedtime` alanlarını ekleyebilir. `authme_*` kolonlarını `limbo_*` olarak yeniden adlandırmayın. Yerel testler izole H2 veritabanında yapılır. `authme_logged` / `authme_session` alanları bu eklentinin oturum durumuyla eşitlenmez.
+
+## Kaynaktan derleme
+
+Java 21 ile:
+
+```bash
+./gradlew --no-daemon test shadowJar checkstyleMain checkstyleTest
+```
+
+Çıktı: `build/libs/limboauth-1.1.15-zonely.1.jar`.
+
+LimboAPI eşleşmeleri [compatibility/limboapi.json](compatibility/limboapi.json) içinde sabit commit'lere bağlıdır. Git, Node.js ve seçilen eşleşmenin Java sürümüyle:
+
+```bash
+node scripts/build_limboapi.mjs 3.4.0
+```
+
+JAR ve kaynak ZIP'i `.test-runtime/dist/` altına yazılır. Minecraft protokol verilerini üretmek ilk çalıştırmada uzun sürebilir. Script ortak veri önbelleği kullanır ve Windows'taki veri üreticisinin çıktı tamponunda kilitlenmesini düzeltir; upstream çalışma zamanı kodunu değiştirmez. `LIMBOAPI_SOURCE` mevcut checkout'u, `LIMBOAPI_DATA_CACHE` veri önbelleğini seçebilir.
+
+Windows'ta Gradle test çalışanı Türkçe karakter içeren yolda sınıf bulamazsa ASCII bir çalışma yolu kullanın; örneğin `subst R: "C:\path\to\limbo"` ardından `R:` üzerinde derleyin.
+
+## Yerel entegrasyon testi
+
+`.test-runtime/` içine `velocity-<version>.jar` ve yukarıdaki isimle LimboAPI JAR'ını koyun; bu klasör Git'e eklenmez.
+
+```bash
+npm install --prefix .test-runtime/client minecraft-protocol@1.68.0
+node scripts/smoke_velocity.mjs 3.4.0 1.1.27-velocity-3.4.0
+node scripts/integration_velocity.mjs 3.4.0 1.1.27-velocity-3.4.0 1.21.11
+```
+
+`JAVA_BIN` kullanılacak `java` dosyasını seçer. Testler yalnızca localhost'ta geçici proxy / H2 / backend açar. Entegrasyon testi kayıt, yanlış parola reddi, oturum önbelleği dolduktan sonra tekrar giriş ve backend'e aktarımı denetler. Test sonunda geçici sunucular kapanır.
+
+## Lisans / kaynaklar
+
+[Elytrium LimboAuth](https://github.com/Elytrium/LimboAuth), [LimboAPI](https://github.com/Elytrium/LimboAPI) ve katkıda bulunan geliştiricilere teşekkürler. Orijinal telif bildirimleri korunur. Kod [GNU AGPL v3](LICENSE) kapsamındadır. LimboAPI dosyaları upstream tabanlı derlemelerdir; release eklerinde ilgili kaynak ZIP'leri ve SHA-256 dosyası bulunur.

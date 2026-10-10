@@ -218,6 +218,7 @@ public class LimboAuth {
     } catch (SQLRuntimeException exception) {
       LOGGER.error("SQL EXCEPTION CAUGHT.", exception);
       this.server.shutdown();
+      return;
     }
 
     Metrics metrics = this.metricsFactory.make(this, 13700);
@@ -243,6 +244,9 @@ public class LimboAuth {
   @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")
   public void reload() {
     Settings.IMP.reload(this.configFile, Settings.IMP.PREFIX);
+    // Reload writes missing defaults; load them too so {PRFX}/{NL} are expanded
+    // before message strings are passed to MessageFormat on config upgrades.
+    Settings.IMP.load(this.configFile, Settings.IMP.PREFIX);
 
     if (!Settings.IMP.MAIN.ONLINE_MODE_NEED_AUTH_STRICT && !Settings.IMP.MAIN.SAVE_PREMIUM_ACCOUNTS) {
       Settings.IMP.MAIN.SAVE_PREMIUM_ACCOUNTS = true;
@@ -477,7 +481,9 @@ public class LimboAuth {
         break;
       }
       case H2: {
-        findSql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + tableName + "';";
+        // H2 2.x stores unquoted table identifiers in uppercase by default.
+        findSql = "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE LOWER(TABLE_NAME) = LOWER('"
+            + tableName + "');";
         break;
       }
       case POSTGRESQL: {
@@ -509,7 +515,9 @@ public class LimboAuth {
           if (databaseLibrary == DatabaseLibrary.POSTGRESQL) {
             builder.append('"');
           }
-          builder.append(" ADD ");
+          // Fresh H2 tables already contain every mapped field. H2 supports
+          // idempotent column additions, avoiding duplicate-column failures.
+          builder.append(databaseLibrary == DatabaseLibrary.H2 ? " ADD IF NOT EXISTS " : " ADD ");
           String columnDefinition = table.getColumnDefinition();
           DatabaseType databaseType = dao.getConnectionSource().getDatabaseType();
           if (columnDefinition == null) {

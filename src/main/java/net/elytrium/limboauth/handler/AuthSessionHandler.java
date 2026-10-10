@@ -42,6 +42,7 @@ import net.elytrium.limboapi.api.LimboSessionHandler;
 import net.elytrium.limboapi.api.player.LimboPlayer;
 import net.elytrium.limboauth.LimboAuth;
 import net.elytrium.limboauth.Settings;
+import net.elytrium.limboauth.compat.AuthMePasswordVerifier;
 import net.elytrium.limboauth.compat.VelocityProtocolCompat;
 import net.elytrium.limboauth.event.PostAuthorizationEvent;
 import net.elytrium.limboauth.event.PostRegisterEvent;
@@ -57,7 +58,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class AuthSessionHandler implements LimboSessionHandler {
 
   public static final CodeVerifier TOTP_CODE_VERIFIER = new DefaultCodeVerifier(new DefaultCodeGenerator(), new SystemTimeProvider());
-  private static final BCrypt.Verifyer HASH_VERIFIER = BCrypt.verifyer();
   private static final BCrypt.Hasher HASHER = BCrypt.withDefaults();
 
   private static Component ratelimited;
@@ -527,12 +527,9 @@ public class AuthSessionHandler implements LimboSessionHandler {
 
   public static boolean checkPassword(String password, RegisteredPlayer player, Dao<RegisteredPlayer, String> playerDao) {
     String hash = player.getHash();
-    boolean isCorrect = HASH_VERIFIER.verify(
-        password.getBytes(StandardCharsets.UTF_8),
-        hash.replace("BCRYPT$", "$2a$").getBytes(StandardCharsets.UTF_8)
-    ).verified;
+    boolean isCorrect = AuthMePasswordVerifier.verify(password, hash);
 
-    if (!isCorrect && migrationHash != null) {
+    if (!isCorrect && hash != null && password != null && migrationHash != null) {
       isCorrect = migrationHash.checkPassword(hash, password);
       if (isCorrect) {
         player.setPassword(password);

@@ -1,0 +1,20 @@
+{
+  "3.4.0": {
+    "commit": "e638f4d8e0ef839a36866a3f1f7814f28f1f07fd",
+    "java": 21,
+    "maximumProtocol": 774,
+    "artifact": "limboapi-1.1.27-velocity-3.4.0.jar"
+  },
+  "3.5.1": {
+    "commit": "013034de70f41f611f388e9c73e1a677e41b7870",
+    "java": 25,
+    "maximumProtocol": 776,
+    "artifact": "limboapi-1.1.27-velocity-3.5.1.jar"
+  },
+  "4.2.0": {
+    "commit": "bfef5799f21d73a80155035c3430f6654aa6b9f8",
+    "java": 25,
+    "maximumProtocol": 777,
+    "artifact": "limboapi-1.1.27-velocity-4.2.0.jar"
+  }
+}
