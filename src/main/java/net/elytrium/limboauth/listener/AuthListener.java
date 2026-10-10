@@ -21,6 +21,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.UpdateBuilder;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.PostLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent;
 import com.velocitypowered.api.event.connection.PreLoginEvent.PreLoginComponentResult;
@@ -163,6 +164,11 @@ public class AuthListener {
           .delay(Settings.IMP.MAIN.PREMIUM_AND_FLOODGATE_MESSAGES_DELAY, TimeUnit.MILLISECONDS)
           .schedule();
     }
+  }
+
+  @Subscribe
+  public void onDisconnect(DisconnectEvent event) {
+    this.plugin.removeActiveAuthSession(event.getPlayer().getUniqueId());
   }
 
   @Subscribe

@@ -19,8 +19,41 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Test and package
         run: ./gradlew --no-daemon test shadowJar checkstyleMain checkstyleTest
+      - name: Assemble versioned packages and source archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p build/release
+          gh release download v1.1.15-zonely.1 --repo "${{ github.repository }}" \
+            --dir build/release \
+            --pattern 'limboapi-1.1.27-velocity-*.jar' \
+            --pattern 'limboapi-source-*.zip'
+          cp build/libs/limboauth-*.jar build/release/
+          cp LICENSE build/release/LICENSE.txt
+          cp RELEASE_NOTES.md build/release/
+          source_zip="limboauth-source-${GITHUB_SHA:0:7}.zip"
+          git archive --format=zip --prefix=zonely-limboauth/ HEAD > "build/release/$source_zip"
+          for version in 3.4.0 3.5.1 4.2.0; do
+            package_dir="build/release-package-$version"
+            mkdir -p "$package_dir/plugins" "$package_dir/sources"
+            cp README.md TESTING.md LICENSE "$package_dir/"
+            cp -R compatibility scripts "$package_dir/"
+            cp "build/release/limboapi-1.1.27-velocity-$version.jar" "$package_dir/plugins/"
+            cp build/libs/limboauth-*.jar "$package_dir/plugins/"
+            cp "build/release/$source_zip" "$package_dir/sources/"
+            case "$version" in
+              3.4.0) api_source=limboapi-source-e638f4d.zip ;;
+              3.5.1) api_source=limboapi-source-013034d.zip ;;
+              4.2.0) api_source=limboapi-source-bfef579.zip ;;
+            esac
+            cp "build/release/$api_source" "$package_dir/sources/"
+            (cd "$package_dir" && zip -q -r "../release/zonely-plugins-velocity-$version.zip" .)
+          done
+          (cd build/release && find . -maxdepth 1 -type f ! -name SHA256SUMS.txt -printf '%f\n' \
+            | sort | while read -r file; do sha256sum "$file"; done > SHA256SUMS.txt)
       - uses: softprops/action-gh-release@v2
         with:
-          files: build/libs/limboauth-*.jar
+          files: build/release/*
           fail_on_unmatched_files: true
           body_path: RELEASE_NOTES.md

@@ -242,7 +242,13 @@ public class AuthSessionHandler implements LimboSessionHandler {
       } else if (command == Command.LOGIN && !this.totpState && this.playerInfo != null) {
         String password = args[1];
         this.saveTempPassword(password);
+        // The password may have changed on the website since this player entered limbo.
+        this.playerInfo = fetchInfoLowercased(this.playerDao, this.playerInfo.getLowercaseNickname());
 
+        if (this.playerInfo == null) {
+          this.proxyPlayer.disconnect(sessionExpired);
+          return;
+        }
         if (password.length() > 0 && checkPassword(password, this.playerInfo, this.playerDao)) {
           if (this.playerInfo.getTotpToken().isEmpty()) {
             this.finishLogin();
@@ -259,6 +265,10 @@ public class AuthSessionHandler implements LimboSessionHandler {
 
         return;
       } else if (command == Command.TOTP && this.totpState && this.playerInfo != null) {
+        if (!this.plugin.isPasswordCurrent(this.playerInfo.getLowercaseNickname(), this.playerInfo.getHash())) {
+          this.proxyPlayer.disconnect(sessionExpired);
+          return;
+        }
         if (TOTP_CODE_VERIFIER.isValidCode(this.playerInfo.getTotpToken(), args[1])) {
           this.finishLogin();
           return;
@@ -432,6 +442,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
   }
 
   private void finishAuth() {
+    if (this.playerInfo != null
+        && !this.plugin.isPasswordCurrent(this.playerInfo.getLowercaseNickname(), this.playerInfo.getHash())) {
+      this.proxyPlayer.disconnect(sessionExpired);
+      return;
+    }
     if (Settings.IMP.MAIN.CRACKED_TITLE_SETTINGS.CLEAR_AFTER_LOGIN) {
       this.proxyPlayer.clearTitle();
     }
@@ -444,7 +459,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
       e.printStackTrace();
     }
 
-    this.plugin.cacheAuthUser(this.proxyPlayer);
+    this.plugin.cacheAuthUser(this.proxyPlayer, this.playerInfo == null ? null : this.playerInfo.getHash());
     this.player.disconnect();
   }
 

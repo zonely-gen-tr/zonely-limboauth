@@ -100,6 +100,7 @@ import net.elytrium.limboauth.command.LimboAuthCommand;
 import net.elytrium.limboauth.command.PremiumCommand;
 import net.elytrium.limboauth.command.TotpCommand;
 import net.elytrium.limboauth.command.UnregisterCommand;
+import net.elytrium.limboauth.compat.CredentialSessionVerifier;
 import net.elytrium.limboauth.dependencies.DatabaseLibrary;
 import net.elytrium.limboauth.event.AuthPluginReloadEvent;
 import net.elytrium.limboauth.event.PreAuthorizationEvent;
@@ -149,6 +150,7 @@ public class LimboAuth {
   private static Serializer SERIALIZER;
 
   private final Map<String, CachedSessionUser> cachedAuthChecks = new ConcurrentHashMap<>();
+  private final Map<UUID, CachedSessionUser> activeAuthSessions = new ConcurrentHashMap<>();
   private final Map<String, CachedPremiumUser> premiumCache = new ConcurrentHashMap<>();
   private final Map<InetAddress, CachedBruteforceUser> bruteforceCache = new ConcurrentHashMap<>();
   private final Map<UUID, Runnable> postLoginTasks = new ConcurrentHashMap<>();
@@ -179,7 +181,9 @@ public class LimboAuth {
   private Component bruteforceAttemptKick;
   private Component nicknameInvalidKick;
   private Component reconnectKick;
+  private Component passwordChangedKick;
   private ScheduledTask purgeCacheTask;
+  private ScheduledTask passwordChangeCheckTask;
   private ScheduledTask purgePremiumCacheTask;
   private ScheduledTask purgeBruteforceCacheTask;
 
@@ -295,6 +299,7 @@ public class LimboAuth {
     this.bruteforceAttemptKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.LOGIN_WRONG_PASSWORD_KICK);
     this.nicknameInvalidKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.NICKNAME_INVALID_KICK);
     this.reconnectKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.RECONNECT_KICK);
+    this.passwordChangedKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.PASSWORD_CHANGED_KICK);
     this.registrationsDisabledKick = SERIALIZER.deserialize(Settings.IMP.MAIN.STRINGS.REGISTRATIONS_DISABLED_KICK);
 
     if (Settings.IMP.MAIN.CHECK_PASSWORD_STRENGTH) {
@@ -431,6 +436,16 @@ public class LimboAuth {
         .repeat(Settings.IMP.MAIN.PURGE_CACHE_MILLIS, TimeUnit.MILLISECONDS)
         .schedule();
 
+    if (this.passwordChangeCheckTask != null) {
+      this.passwordChangeCheckTask.cancel();
+    }
+    long sessionCheckInterval = Math.max(1000L, Settings.IMP.MAIN.PASSWORD_CHANGE_CHECK_MILLIS);
+    this.passwordChangeCheckTask = this.server.getScheduler()
+        .buildTask(this, this::checkActivePasswordChanges)
+        .delay(sessionCheckInterval, TimeUnit.MILLISECONDS)
+        .repeat(sessionCheckInterval, TimeUnit.MILLISECONDS)
+        .schedule();
+
     if (this.purgePremiumCacheTask != null) {
       this.purgePremiumCacheTask.cancel();
     }
@@ -539,9 +554,67 @@ public class LimboAuth {
   }
 
   public void cacheAuthUser(Player player) {
+    String authenticatedHash = this.readPasswordHash(player.getUsername().toLowerCase(Locale.ROOT));
+    // Premium/Floodgate bypass can authenticate players who do not have a saved account.
+    // Such players have no website password to monitor and must not be kicked periodically.
+    if (authenticatedHash != null) {
+      this.cacheAuthUser(player, authenticatedHash);
+    }
+  }
+
+  public void cacheAuthUser(Player player, String authenticatedHash) {
     String username = player.getUsername();
     String lowercaseUsername = username.toLowerCase(Locale.ROOT);
-    this.cachedAuthChecks.put(lowercaseUsername, new CachedSessionUser(System.currentTimeMillis(), player.getRemoteAddress().getAddress(), username));
+    CachedSessionUser session = new CachedSessionUser(
+        System.currentTimeMillis(), player.getRemoteAddress().getAddress(), username, authenticatedHash);
+    this.cachedAuthChecks.put(lowercaseUsername, session);
+    this.activeAuthSessions.put(player.getUniqueId(), session);
+  }
+
+  public void removeActiveAuthSession(UUID uuid) {
+    this.activeAuthSessions.remove(uuid);
+  }
+
+  /** A missing account is distinct from a premium account with an empty password. */
+  public String readPasswordHash(String lowercaseUsername) {
+    try {
+      return CredentialSessionVerifier.readHash(this.playerDao, lowercaseUsername);
+    } catch (SQLException e) {
+      throw new SQLRuntimeException(e);
+    }
+  }
+
+  public boolean isPasswordCurrent(String lowercaseUsername, String authenticatedHash) {
+    try {
+      return CredentialSessionVerifier.isCurrent(this.playerDao, lowercaseUsername, authenticatedHash);
+    } catch (SQLException e) {
+      throw new SQLRuntimeException(e);
+    }
+  }
+
+  private void checkActivePasswordChanges() {
+    for (Map.Entry<UUID, CachedSessionUser> entry : this.activeAuthSessions.entrySet()) {
+      UUID uuid = entry.getKey();
+      CachedSessionUser session = entry.getValue();
+      Player player = this.server.getPlayer(uuid).orElse(null);
+      if (player == null || !player.getUsername().equals(session.getUsername())) {
+        this.activeAuthSessions.remove(uuid, session);
+        continue;
+      }
+
+      try {
+        if (!this.isPasswordCurrent(session.getUsername().toLowerCase(Locale.ROOT), session.getPasswordHash())) {
+          this.removePlayerFromCache(session.getUsername());
+          if (this.activeAuthSessions.remove(uuid, session)) {
+            player.disconnect(this.passwordChangedKick);
+          }
+        }
+      } catch (SQLRuntimeException e) {
+        // Preserve sessions during transient DB failures; retry on the next scheduled check.
+        LOGGER.warn("Unable to check active authentication sessions", e);
+        return;
+      }
+    }
   }
 
   public void removePlayerFromCache(String username) {
@@ -556,12 +629,24 @@ public class LimboAuth {
   public boolean needAuth(Player player) {
     String username = player.getUsername();
     String lowercaseUsername = username.toLowerCase(Locale.ROOT);
-    if (!this.cachedAuthChecks.containsKey(lowercaseUsername)) {
+    CachedSessionUser sessionUser = this.cachedAuthChecks.get(lowercaseUsername);
+    if (sessionUser == null) {
       return true;
-    } else {
-      CachedSessionUser sessionUser = this.cachedAuthChecks.get(lowercaseUsername);
-      return !sessionUser.getInetAddress().equals(player.getRemoteAddress().getAddress()) || !sessionUser.getUsername().equals(username);
     }
+    if (!sessionUser.getInetAddress().equals(player.getRemoteAddress().getAddress())
+        || !sessionUser.getUsername().equals(username)) {
+      return true;
+    }
+    try {
+      if (this.isPasswordCurrent(lowercaseUsername, sessionUser.getPasswordHash())) {
+        this.activeAuthSessions.put(player.getUniqueId(), sessionUser);
+        return false;
+      }
+    } catch (SQLRuntimeException e) {
+      LOGGER.warn("Unable to validate cached authentication for {}", username, e);
+    }
+    this.cachedAuthChecks.remove(lowercaseUsername, sessionUser);
+    return true;
   }
 
   public void authPlayer(Player player) {
@@ -1020,12 +1105,14 @@ public class LimboAuth {
 
     private final InetAddress inetAddress;
     private final String username;
+    private final String passwordHash;
 
-    public CachedSessionUser(long checkTime, InetAddress inetAddress, String username) {
+    public CachedSessionUser(long checkTime, InetAddress inetAddress, String username, String passwordHash) {
       super(checkTime);
 
       this.inetAddress = inetAddress;
       this.username = username;
+      this.passwordHash = passwordHash;
     }
 
     public InetAddress getInetAddress() {
@@ -1034,6 +1121,10 @@ public class LimboAuth {
 
     public String getUsername() {
       return this.username;
+    }
+
+    public String getPasswordHash() {
+      return this.passwordHash;
     }
   }
 

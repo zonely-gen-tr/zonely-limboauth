@@ -1,4 +1,12 @@
-# Zonely LimboAuth 1.1.15-zonely.1
+# Zonely LimboAuth 1.1.15-zonely.2
+
+### Web password reset / session invalidation
+
+- Changes to the shared `userslist.password` column now invalidate cached logins, even when the player reconnects from the same IP.
+- Connected players are disconnected after an external password reset or account deletion; checks run every 5 seconds by default (`main.password-change-check-millis`).
+- A password changed while the player is in the auth limbo can no longer be bypassed with the previously loaded hash. New credentials must be used to log in.
+- The action is automatic when the website and LimboAuth use the same database. The website must persist the updated bcrypt hash to `userslist.password`.
+- Existing LimboAPI compatibility matrix and source archives continue to apply.
 
 Velocity 3.4.0 / 3.5.1 için LimboAPI protokol uyuşmazlığını sürüme özel API dosyalarıyla çözer. LimboAuth JAR'ı ortaktır; Velocity sürümünüze ait **tek** LimboAPI JAR'ını kullanın.
 

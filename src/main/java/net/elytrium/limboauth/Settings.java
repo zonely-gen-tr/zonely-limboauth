@@ -142,6 +142,8 @@ public class Settings extends YamlConfig {
     @Comment("Available dimensions: OVERWORLD, NETHER, THE_END")
     public Dimension DIMENSION = Dimension.THE_END;
     public long PURGE_CACHE_MILLIS = 3600000;
+    @Comment("Check active sessions for external password changes. Time in milliseconds (minimum 1000).")
+    public long PASSWORD_CHANGE_CHECK_MILLIS = 5000;
     public long PURGE_PREMIUM_CACHE_MILLIS = 28800000;
     public long PURGE_BRUTEFORCE_CACHE_MILLIS = 28800000;
     @Comment("Used to ban IPs when a possible attacker incorrectly enters the password")
@@ -503,6 +505,7 @@ public class Settings extends YamlConfig {
       public String DESTROY_SESSION_SUCCESSFUL = "{PRFX} &eYour session is now destroyed, you'll need to log in again after reconnecting.";
 
       public String MOD_SESSION_EXPIRED = "{PRFX} Your session has expired, log in again.";
+      public String PASSWORD_CHANGED_KICK = "{PRFX} &eYour account password changed. Reconnect and log in again.";
     }
   }
 
