@@ -1,4 +1,13 @@
-# Zonely LimboAuth 1.1.15-zonely.2
+# Zonely LimboAuth 1.1.15-zonely.3
+
+### Ortak web hesabı ve yinelenen kayıt düzeltmesi
+
+- Hesap anahtarı `userslist.id`, oyuncu adı `nick` olarak eşlenir. Web profil alanı `subname` değiştirilmez.
+- Büyük/küçük harf farkı ve eski yinelenen kayıtlar için en küçük ID'li hesap seçilir. Mevcut yinelenen kayıtlar otomatik silinmez veya birleştirilmez.
+- Başarılı eski AuthMe SHA girişlerinde web sitesinin mevcut parola özeti korunur; kredi alanına yazılmaz.
+- `main.protect-website-accounts: true` varsayılandır. `/unregister`, `/forceunregister` ve `/premium` engellenir; otomatik premium giriş web parolasını temizlemez.
+- Parola değiştirme komutları bcrypt yazar; web sitesinin bu biçimi desteklediğini doğrulayın. Ayrıntılar: [ortak veritabanı rehberi](https://github.com/zonely-gen-tr/zonely-limboauth/blob/master/docs/ZONELY_SHARED_DATABASE.md).
+- Hesap eşleme, kredi/parola koruma ve oturum iptali dahil 6 otomatik test geçer. Önceki sürümün proxy entegrasyon kapsamı [TESTING.md](https://github.com/zonely-gen-tr/zonely-limboauth/blob/master/TESTING.md) içinde ayrıca belirtilir.
 
 ### Web password reset / session invalidation
 
@@ -16,7 +25,7 @@ Velocity 3.4.0 / 3.5.1 için LimboAPI protokol uyuşmazlığını sürüme özel
 | 3.5.1 | `limboapi-1.1.27-velocity-3.5.1.jar` | 25 |
 | 4.2.0 | `limboapi-1.1.27-velocity-4.2.0.jar` | 25 |
 
-- AuthMe / Zonely `userslist` alanları: `subname`, `nick`, `password`, `authme_regip`, `authme_created_at`, `authme_lastlogin`, `ip`, `totp`.
+- AuthMe / Zonely `userslist` alanları: `id`, `nick`, `password`, `authme_regip`, `authme_created_at`, `authme_lastlogin`, `ip`, `totp`. `subname` web profiline aittir.
 - Bcrypt `$2a$`, `$2b$`, `$2y$` ve AuthMe `BCRYPT$` desteği; bozuk hash'ler reddedilir.
 - H2 ilk başlangıçta yinelenen kolon hatası düzeltildi.
 - Eksik config alanları güncellenirken `{PRFX}` mesaj ayrıştırma hatası düzeltildi.

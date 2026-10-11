@@ -90,7 +90,7 @@ try {
   mkdirSync(join(dir, 'plugins', 'limboauth'), { recursive: true });
   copyFileSync(join(assets, `velocity-${velocity}.jar`), join(dir, 'velocity.jar'));
   copyFileSync(join(assets, `limboapi-${api}.jar`), join(dir, 'plugins', 'limboapi.jar'));
-  copyFileSync(join(root, 'build/libs/limboauth-1.1.15-zonely.2.jar'), join(dir, 'plugins', 'limboauth.jar'));
+  copyFileSync(join(root, 'build/libs/limboauth-1.1.15-zonely.3.jar'), join(dir, 'plugins', 'limboauth.jar'));
   writeFileSync(join(dir, 'plugins/limboauth/config.yml'), 'main:\n  purge-cache-millis: 100\n');
   writeFileSync(join(dir, 'velocity.toml'), `config-version = "2.7"\nbind = "127.0.0.1:${port}"\nmotd = "Zonely integration test"\nonline-mode = false\nforce-key-authentication = false\nplayer-info-forwarding-mode = "none"\n[servers]\nlobby = "127.0.0.1:${backendPort}"\ntry = ["lobby"]\n[forced-hosts]\n"lobby.example.com" = ["lobby"]\n`);
   const log = join(assets, `integration-${velocity}-${clientVersion}.log`);

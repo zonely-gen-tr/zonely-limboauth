@@ -6,7 +6,7 @@ Velocity için [Elytrium LimboAuth](https://github.com/Elytrium/LimboAuth) taban
 
 ## Kurulum
 
-1. [Releases](https://github.com/zonely-gen-tr/zonely-limboauth/releases) bölümünden `limboauth-1.1.15-zonely.2.jar` ve **Velocity sürümünüze ait** LimboAPI JAR'ını indirin.
+1. [Releases](https://github.com/zonely-gen-tr/zonely-limboauth/releases) bölümünden `limboauth-1.1.15-zonely.3.jar` ve **Velocity sürümünüze ait** LimboAPI JAR'ını indirin.
 2. İki JAR'ı Velocity proxy'nin `plugins/` klasörüne koyun. Eski LimboAPI / LimboAuth dosyalarını buradan çıkarın; aynı eklentinin iki sürümünü birlikte yüklemeyin.
 3. Proxy'yi başlatıp kapatın. Oluşan `plugins/limboauth/config.yml` içindeki `database` bölümünü düzenleyin.
 4. Proxy'yi yeniden başlatın. Logda `limboapi`, `limboauth` ve `Done` görünmeli. Deneme hesabıyla kayıt, yanlış parola, yeniden giriş ve lobiye aktarımı kontrol edin.
@@ -65,14 +65,17 @@ TLS parametrelerini kendi MySQL sunucunuza göre ayarlayın. DB parolalarını v
 
 | Alan | `userslist` kolonu |
 | --- | --- |
-| Küçük harfle oyuncu adı / hesap anahtarı | `subname` |
-| Görünen oyuncu adı | `nick` |
+| Sayısal hesap anahtarı | `id` |
+| Oyuncu adı (büyük/küçük harf duyarsız aranır) | `nick` |
+| Web profil alanı (oyuncu adı olarak kullanılmaz) | `subname` |
 | Oyuncu parola özeti | `password` |
 | Kayıt IP / tarihi | `authme_regip`, `authme_created_at` |
 | Son giriş IP / tarihi | `ip`, `authme_lastlogin` |
 | İki aşamalı doğrulama anahtarı | `totp` |
 
-`userslist.password`, **oyuncunun bcrypt hash'idir**. `$2a$`, `$2b$`, PHP uyumlu `$2y$` ve AuthMe `BCRYPT$` biçimleri desteklenir. Yeni kayıtlar bcrypt kullanır. Ayrı bir salt kolonu gerekmez. Diğer eski hash algoritmaları için `main.migration-hash` ayarını inceleyin.
+`userslist.password`, **oyuncunun parola özetidir**. `$2a$`, `$2b$`, PHP uyumlu `$2y$`, AuthMe `BCRYPT$` ve eski AuthMe SHA biçimleri desteklenir. Başarılı eski SHA girişlerinde mevcut özet korunur. Yeni kayıtlar bcrypt kullanır. Ayrı bir salt kolonu gerekmez. Diğer eski hash algoritmaları için `main.migration-hash` ayarını inceleyin.
+
+Ortak web veritabanında `main.protect-website-accounts: true` ayarını açık tutun. Bu ayar hesap silme ve premium parola temizleme işlemlerini engeller. Yinelenen oyuncu adlarında en küçük ID seçilir; eski kayıtlar otomatik silinmez. Ayrıntılar [ortak veritabanı rehberinde](ZONELY_SHARED_DATABASE.md).
 
 Canlı veritabanına geçmeden önce yedek alın: eklenti eşlemede bulunan eksik kolonları (`uuid`, `premiumuuid`, `issuedtime`, `totp` ve giriş bilgileri gibi) ekleyebilir. `authme_*` kolonlarını `limbo_*` olarak yeniden adlandırmayın. Otomatik uyumluluk testleri izole H2 veritabanında yapılır. Ayrıca izinli MySQL bağlantısında Minecraft 1.20.4 ile kayıt, giriş ve dışarıdan parola değişikliği testi uygulanmıştır; kapsam için [TESTING.md](../TESTING.md) dosyasına bakın. `authme_logged` / `authme_session` alanları bu eklentinin oturum durumuyla eşitlenmez.
 
@@ -84,7 +87,7 @@ Java 21 ile:
 ./gradlew --no-daemon test shadowJar checkstyleMain checkstyleTest
 ```
 
-Çıktı: `build/libs/limboauth-1.1.15-zonely.2.jar`.
+Çıktı: `build/libs/limboauth-1.1.15-zonely.3.jar`.
 
 LimboAPI eşleşmeleri [compatibility/limboapi.json](../compatibility/limboapi.json) içinde sabit commit'lere bağlıdır. Git, Node.js ve seçilen eşleşmenin Java sürümüyle:
 

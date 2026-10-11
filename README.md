@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.2/limboauth-1.1.15-zonely.2.jar">LimboAuth indir</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.2">LimboAPI ve paketler</a> · <a href="https://www.virustotal.com/gui/file-analysis/Yzg2MDk0OGRjMDVlM2YxZDE5ZTNiZjRkZDUxZWVmMGM6MTc5MTcyNzE0OQ==">VirusTotal raporu</a> · <a href="docs/KURULUM.md">Kurulum rehberi</a>
+  <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.3/limboauth-1.1.15-zonely.3.jar">LimboAuth indir</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3">LimboAPI ve paketler</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.3/SHA256SUMS.txt">SHA-256 değerleri</a> · <a href="docs/KURULUM.md">Kurulum rehberi</a>
 </p>
 
 [![Build and test](https://github.com/zonely-gen-tr/zonely-limboauth/actions/workflows/build.yml/badge.svg)](https://github.com/zonely-gen-tr/zonely-limboauth/actions/workflows/build.yml)
@@ -26,7 +26,7 @@ Floodgate ve istemci modu bağlantıları ilgili ek yazılımları ve ayarların
 
 ### Kurulum
 
-1. [Sürüm sayfasından](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.2) **LimboAuth JAR’ını** ve kullandığınız Velocity’ye eşleşen **LimboAPI JAR’ını** indirin.
+1. [Sürüm sayfasından](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3) **LimboAuth JAR’ını** ve kullandığınız Velocity’ye eşleşen **LimboAPI JAR’ını** indirin.
 2. İkisini Velocity’nin `plugins/` klasörüne koyun. Her eklentiden tek JAR bırakın.
 3. Proxy’yi bir kez başlatıp kapatın. `plugins/limboauth/config.yml` içindeki veritabanı ve giriş ayarlarını düzenleyin.
 4. `velocity.toml` içindeki lobi adresini ayarlayın, proxy’yi yeniden başlatın ve bir deneme hesabıyla giriş yapın.
@@ -65,16 +65,14 @@ LimboAuth JAR’ı ortaktır; LimboAPI dosyası proxy’ye göre seçilir. Doğr
 
 Komut erişimleri `main.command-permission-state` ayarlarından düzenlenir. TOTP giriş ekranında `/2fa <kod>` kullanılır.
 
+Ortak web veritabanında varsayılan `main.protect-website-accounts: true` ayarı `/unregister`, `/forceunregister` ve `/premium` işlemlerini engeller. Eski yinelenen kayıtlar arasında en küçük ID seçilir. [Ortak veritabanı ve parola uyumluluğu](docs/ZONELY_SHARED_DATABASE.md).
+
 </details>
 
 ### Dosya doğrulama ve kaynaklar
 
-`limboauth-1.1.15-zonely.2.jar` için SHA-256:
+`limboauth-1.1.15-zonely.3.jar` ve paketlerin SHA-256 değerleri sürüm ekindeki `SHA256SUMS.txt` dosyasında bulunur.
 
-```text
-5695b0a408299f531cf1e105753624c7f3374b99c33c5ba9866a11513bb7fca2
-```
-
-[VirusTotal raporu](https://www.virustotal.com/gui/file-analysis/Yzg2MDk0OGRjMDVlM2YxZDE5ZTNiZjRkZDUxZWVmMGM6MTc5MTcyNzE0OQ==) · [Sürüm dosyaları ve SHA256SUMS](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.2) · [Hata bildir](https://github.com/zonely-gen-tr/zonely-limboauth/issues)
+[Sürüm dosyaları ve SHA256SUMS](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3) · [Hata bildir](https://github.com/zonely-gen-tr/zonely-limboauth/issues)
 
 Kod [GNU AGPL v3](LICENSE) kapsamındadır. Elytrium LimboAuth / LimboAPI ve katkıda bulunan geliştiricilerin telif bildirimleri korunur. LimboAPI kaynak arşivleri sürüm eklerinde bulunur. Görsellerdeki [Feather ikonları](docs/assets/FEATHER-LICENSE.txt) MIT lisanslıdır; [üçüncü taraf bildirimleri](docs/THIRD_PARTY_NOTICES.md).
