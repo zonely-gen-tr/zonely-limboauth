@@ -30,7 +30,7 @@ import net.elytrium.limboauth.Settings;
 public class RegisteredPlayer {
 
   public static final String NICKNAME_FIELD = "nick";
-  public static final String LOWERCASE_NICKNAME_FIELD = "subname";
+  public static final String ID_FIELD = "id";
   public static final String HASH_FIELD = "password";
   public static final String IP_FIELD = "authme_regip";
   public static final String LOGIN_IP_FIELD = "ip";
@@ -46,8 +46,8 @@ public class RegisteredPlayer {
   @DatabaseField(canBeNull = false, columnName = NICKNAME_FIELD)
   private String nickname;
 
-  @DatabaseField(id = true, columnName = LOWERCASE_NICKNAME_FIELD)
-  private String lowercaseNickname;
+  @DatabaseField(generatedId = true, columnName = ID_FIELD)
+  private Integer id;
 
   @DatabaseField(canBeNull = false, columnName = HASH_FIELD)
   private String hash = "";
@@ -80,7 +80,6 @@ public class RegisteredPlayer {
   public RegisteredPlayer(String nickname, String lowercaseNickname,
       String hash, String ip, String totpToken, Long regDate, String uuid, String premiumUuid, String loginIp, Long loginDate) {
     this.nickname = nickname;
-    this.lowercaseNickname = lowercaseNickname;
     this.hash = hash;
     this.ip = ip;
     this.totpToken = totpToken;
@@ -101,7 +100,6 @@ public class RegisteredPlayer {
 
   public RegisteredPlayer(String nickname, String uuid, String ip) {
     this.nickname = nickname;
-    this.lowercaseNickname = nickname.toLowerCase(Locale.ROOT);
     this.uuid = uuid;
     this.ip = ip;
     this.loginIp = ip;
@@ -117,17 +115,20 @@ public class RegisteredPlayer {
 
   public RegisteredPlayer setNickname(String nickname) {
     this.nickname = nickname;
-    this.lowercaseNickname = nickname.toLowerCase(Locale.ROOT);
 
     return this;
   }
 
   public String getNickname() {
-    return this.nickname == null ? this.lowercaseNickname : this.nickname;
+    return this.nickname;
   }
 
   public String getLowercaseNickname() {
-    return this.lowercaseNickname;
+    return this.nickname.toLowerCase(Locale.ROOT);
+  }
+
+  public Integer getId() {
+    return this.id;
   }
 
   public RegisteredPlayer setPassword(String password) {

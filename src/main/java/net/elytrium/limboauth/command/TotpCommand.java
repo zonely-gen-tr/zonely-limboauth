@@ -44,7 +44,7 @@ public class TotpCommand extends RatelimitedCommand {
 
   private final SecretGenerator secretGenerator = new DefaultSecretGenerator();
   private final RecoveryCodeGenerator codesGenerator = new RecoveryCodeGenerator();
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final Component notPlayer;
   private final Component usage;
@@ -64,7 +64,7 @@ public class TotpCommand extends RatelimitedCommand {
   private final Component wrong;
   private final Component crackedCommand;
 
-  public TotpCommand(Dao<RegisteredPlayer, String> playerDao) {
+  public TotpCommand(Dao<RegisteredPlayer, Integer> playerDao) {
     this.playerDao = playerDao;
 
     Serializer serializer = LimboAuth.getSerializer();
@@ -98,7 +98,7 @@ public class TotpCommand extends RatelimitedCommand {
         String usernameLowercase = username.toLowerCase(Locale.ROOT);
 
         RegisteredPlayer playerInfo;
-        UpdateBuilder<RegisteredPlayer, String> updateBuilder;
+        UpdateBuilder<RegisteredPlayer, Integer> updateBuilder;
         if (args[0].equalsIgnoreCase("enable")) {
           if (this.needPassword ? args.length == 2 : args.length == 1) {
             playerInfo = AuthSessionHandler.fetchInfoLowercased(this.playerDao, usernameLowercase);
@@ -121,7 +121,7 @@ public class TotpCommand extends RatelimitedCommand {
             String secret = this.secretGenerator.generate();
             try {
               updateBuilder = this.playerDao.updateBuilder();
-              updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, usernameLowercase);
+              updateBuilder.where().eq(RegisteredPlayer.ID_FIELD, playerInfo.getId());
               updateBuilder.updateColumnValue(RegisteredPlayer.TOTP_TOKEN_FIELD, secret);
               updateBuilder.update();
             } catch (SQLException e) {
@@ -159,7 +159,7 @@ public class TotpCommand extends RatelimitedCommand {
             if (AuthSessionHandler.TOTP_CODE_VERIFIER.isValidCode(playerInfo.getTotpToken(), args[1])) {
               try {
                 updateBuilder = this.playerDao.updateBuilder();
-                updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, usernameLowercase);
+                updateBuilder.where().eq(RegisteredPlayer.ID_FIELD, playerInfo.getId());
                 updateBuilder.updateColumnValue(RegisteredPlayer.TOTP_TOKEN_FIELD, "");
                 updateBuilder.update();
 

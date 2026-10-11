@@ -37,20 +37,20 @@ class CredentialSessionVerifierTest {
     try (Connection webConnection = DriverManager.getConnection(url);
         Statement web = webConnection.createStatement();
         JdbcConnectionSource gameConnection = new JdbcConnectionSource(url)) {
-      web.execute("CREATE TABLE userslist (subname VARCHAR(32) PRIMARY KEY, nick VARCHAR(32), "
+      web.execute("CREATE TABLE userslist (id INT AUTO_INCREMENT PRIMARY KEY, subname VARCHAR(32) NOT NULL DEFAULT '0', nick VARCHAR(32), "
           + "password VARCHAR(255), ip VARCHAR(45), authme_regip VARCHAR(45), "
           + "authme_created_at BIGINT, authme_lastlogin BIGINT, totp VARCHAR(255), "
           + "uuid VARCHAR(64), premiumuuid VARCHAR(64), issuedtime BIGINT)");
-      web.execute("INSERT INTO userslist (subname, nick, password) VALUES ('player', 'Player', 'original-hash')");
+      web.execute("INSERT INTO userslist (id, subname, nick, password) VALUES (4, '0', 'Player', 'original-hash')");
 
-      Dao<RegisteredPlayer, String> dao = DaoManager.createDao(gameConnection, RegisteredPlayer.class);
+      Dao<RegisteredPlayer, Integer> dao = DaoManager.createDao(gameConnection, RegisteredPlayer.class);
       assertTrue(CredentialSessionVerifier.isCurrent(dao, "player", "original-hash"));
 
-      web.execute("UPDATE userslist SET password = 'reset-hash' WHERE subname = 'player'");
+      web.execute("UPDATE userslist SET password = 'reset-hash' WHERE id = 4");
       assertFalse(CredentialSessionVerifier.isCurrent(dao, "player", "original-hash"));
       assertTrue(CredentialSessionVerifier.isCurrent(dao, "player", "reset-hash"));
 
-      web.execute("DELETE FROM userslist WHERE subname = 'player'");
+      web.execute("DELETE FROM userslist WHERE id = 4");
       assertFalse(CredentialSessionVerifier.isCurrent(dao, "player", "reset-hash"));
       assertFalse(CredentialSessionVerifier.isCurrent(dao, "player", null));
     }

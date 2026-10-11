@@ -188,7 +188,7 @@ public class LimboAuth {
   private ScheduledTask purgeBruteforceCacheTask;
 
   private ConnectionSource connectionSource;
-  private Dao<RegisteredPlayer, String> playerDao;
+  private Dao<RegisteredPlayer, Integer> playerDao;
   private Pattern nicknameValidationPattern;
   private Limbo authServer;
 
@@ -772,11 +772,14 @@ public class LimboAuth {
 
   public void updateLoginData(Player player) throws SQLException {
     String lowercaseNickname = player.getUsername().toLowerCase(Locale.ROOT);
-    UpdateBuilder<RegisteredPlayer, String> updateBuilder = this.playerDao.updateBuilder();
-    updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, lowercaseNickname);
-    updateBuilder.updateColumnValue(RegisteredPlayer.LOGIN_IP_FIELD, player.getRemoteAddress().getAddress().getHostAddress());
-    updateBuilder.updateColumnValue(RegisteredPlayer.LOGIN_DATE_FIELD, System.currentTimeMillis());
-    updateBuilder.update();
+    RegisteredPlayer account = AuthSessionHandler.fetchInfoLowercased(this.playerDao, lowercaseNickname);
+    if (account != null) {
+      UpdateBuilder<RegisteredPlayer, Integer> updateBuilder = this.playerDao.updateBuilder();
+      updateBuilder.where().eq(RegisteredPlayer.ID_FIELD, account.getId());
+      updateBuilder.updateColumnValue(RegisteredPlayer.LOGIN_IP_FIELD, player.getRemoteAddress().getAddress().getHostAddress());
+      updateBuilder.updateColumnValue(RegisteredPlayer.LOGIN_DATE_FIELD, System.currentTimeMillis());
+      updateBuilder.update();
+    }
 
     if (Settings.IMP.MAIN.MOD.ENABLED) {
       byte[] lowercaseNicknameSerialized = lowercaseNickname.getBytes(StandardCharsets.UTF_8);
@@ -847,30 +850,13 @@ public class LimboAuth {
 
   public PremiumResponse isPremiumInternal(String nickname) {
     try {
-      QueryBuilder<RegisteredPlayer, String> crackedCountQuery = this.playerDao.queryBuilder();
-      crackedCountQuery.where()
-          .eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, nickname)
-          .and()
-          .ne(RegisteredPlayer.HASH_FIELD, "");
-      crackedCountQuery.setCountOf(true);
-
-      QueryBuilder<RegisteredPlayer, String> premiumCountQuery = this.playerDao.queryBuilder();
-      premiumCountQuery.where()
-          .eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, nickname)
-          .and()
-          .eq(RegisteredPlayer.HASH_FIELD, "");
-      premiumCountQuery.setCountOf(true);
-
-      if (this.playerDao.countOf(crackedCountQuery.prepare()) != 0) {
-        return new PremiumResponse(PremiumState.CRACKED);
-      }
-
-      if (this.playerDao.countOf(premiumCountQuery.prepare()) != 0) {
-        return new PremiumResponse(PremiumState.PREMIUM);
+      RegisteredPlayer account = AuthSessionHandler.fetchInfo(this.playerDao, nickname);
+      if (account != null) {
+        return new PremiumResponse(account.getHash().isEmpty() ? PremiumState.PREMIUM : PremiumState.CRACKED);
       }
 
       return new PremiumResponse(PremiumState.UNKNOWN);
-    } catch (SQLException e) {
+    } catch (SQLRuntimeException e) {
       LOGGER.error("Unable to check if account is premium.", e);
       return new PremiumResponse(PremiumState.ERROR);
     }
@@ -878,7 +864,7 @@ public class LimboAuth {
 
   public boolean isPremiumUuid(UUID uuid) {
     try {
-      QueryBuilder<RegisteredPlayer, String> premiumCountQuery = this.playerDao.queryBuilder();
+      QueryBuilder<RegisteredPlayer, Integer> premiumCountQuery = this.playerDao.queryBuilder();
       premiumCountQuery.where()
           .eq(RegisteredPlayer.PREMIUM_UUID_FIELD, uuid.toString())
           .and()
@@ -1048,7 +1034,7 @@ public class LimboAuth {
     return this.connectionSource;
   }
 
-  public Dao<RegisteredPlayer, String> getPlayerDao() {
+  public Dao<RegisteredPlayer, Integer> getPlayerDao() {
     return this.playerDao;
   }
 

@@ -40,7 +40,7 @@ public class ForceChangePasswordCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
   private final ProxyServer server;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final String message;
   private final String successful;
@@ -48,7 +48,7 @@ public class ForceChangePasswordCommand extends RatelimitedCommand {
   private final String notRegistered;
   private final Component usage;
 
-  public ForceChangePasswordCommand(LimboAuth plugin, ProxyServer server, Dao<RegisteredPlayer, String> playerDao) {
+  public ForceChangePasswordCommand(LimboAuth plugin, ProxyServer server, Dao<RegisteredPlayer, Integer> playerDao) {
     this.plugin = plugin;
     this.server = server;
     this.playerDao = playerDao;
@@ -84,8 +84,8 @@ public class ForceChangePasswordCommand extends RatelimitedCommand {
         final String oldHash = registeredPlayer.getHash();
         final String newHash = RegisteredPlayer.genHash(newPassword);
 
-        UpdateBuilder<RegisteredPlayer, String> updateBuilder = this.playerDao.updateBuilder();
-        updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, nicknameLowercased);
+        UpdateBuilder<RegisteredPlayer, Integer> updateBuilder = this.playerDao.updateBuilder();
+        updateBuilder.where().eq(RegisteredPlayer.ID_FIELD, registeredPlayer.getId());
         updateBuilder.updateColumnValue(RegisteredPlayer.HASH_FIELD, newHash);
         updateBuilder.update();
 

@@ -21,6 +21,7 @@ import com.j256.ormlite.dao.Dao;
 import java.sql.SQLException;
 import java.util.Objects;
 import net.elytrium.limboauth.model.RegisteredPlayer;
+import net.elytrium.limboauth.model.RegisteredPlayerLookup;
 
 /** Reads password hashes from shared web/game storage to invalidate stale sessions. */
 public final class CredentialSessionVerifier {
@@ -28,14 +29,14 @@ public final class CredentialSessionVerifier {
   private CredentialSessionVerifier() {
   }
 
-  public static String readHash(Dao<RegisteredPlayer, String> dao, String lowercaseNickname) throws SQLException {
-    RegisteredPlayer account = dao.queryForId(lowercaseNickname);
+  public static String readHash(Dao<RegisteredPlayer, Integer> dao, String lowercaseNickname) throws SQLException {
+    RegisteredPlayer account = RegisteredPlayerLookup.findByNickname(dao, lowercaseNickname);
     return account == null ? null : account.getHash();
   }
 
-  public static boolean isCurrent(Dao<RegisteredPlayer, String> dao, String lowercaseNickname, String sessionHash)
+  public static boolean isCurrent(Dao<RegisteredPlayer, Integer> dao, String lowercaseNickname, String sessionHash)
       throws SQLException {
-    RegisteredPlayer account = dao.queryForId(lowercaseNickname);
+    RegisteredPlayer account = RegisteredPlayerLookup.findByNickname(dao, lowercaseNickname);
     return account != null && Objects.equals(sessionHash, account.getHash());
   }
 }

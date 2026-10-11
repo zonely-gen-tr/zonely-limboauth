@@ -19,6 +19,7 @@ package net.elytrium.limboauth.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
@@ -31,23 +32,72 @@ import org.junit.jupiter.api.Test;
 class AuthMeSchemaTest {
 
   @Test
-  void readsSharedAuthMeColumnsWithoutRenamingThem() throws Exception {
-    try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:authme;DB_CLOSE_DELAY=-1");
+  void originalWebsiteAccountWinsDuplicateNicknameWithoutChangingCreditsOrName() throws Exception {
+    String url = "jdbc:h2:mem:authme;DB_CLOSE_DELAY=-1";
+    try (Connection connection = DriverManager.getConnection(url);
         Statement statement = connection.createStatement()) {
-      statement.execute("CREATE TABLE userslist (id BIGINT AUTO_INCREMENT, subname VARCHAR(32) PRIMARY KEY, "
-          + "nick VARCHAR(32), password VARCHAR(255), ip VARCHAR(45), authme_regip VARCHAR(45), "
+      statement.execute("CREATE TABLE userslist (id INT AUTO_INCREMENT PRIMARY KEY, "
+          + "subname VARCHAR(255) NOT NULL DEFAULT '0', nick VARCHAR(32), "
+          + "password VARCHAR(255), credit INT DEFAULT 0, ip VARCHAR(45), authme_regip VARCHAR(45), "
           + "authme_created_at BIGINT, authme_lastlogin BIGINT, totp VARCHAR(255), "
           + "uuid VARCHAR(64), premiumuuid VARCHAR(64), issuedtime BIGINT)");
-      statement.execute("INSERT INTO userslist (subname, nick, password) "
-          + "VALUES ('zonelytester', 'ZonelyTester', 'test-hash')");
+      statement.execute("INSERT INTO userslist (id, subname, nick, password, credit) "
+          + "VALUES (4, '0', 'WhiteEffect', 'site-hash', 98825)");
+      statement.execute("INSERT INTO userslist (id, subname, nick, password, credit) "
+          + "VALUES (8, 'whiteeffect', 'WhiteEffect', 'duplicate-hash', 0)");
     }
-    try (JdbcConnectionSource database = new JdbcConnectionSource("jdbc:h2:mem:authme;DB_CLOSE_DELAY=-1")) {
-      Dao<RegisteredPlayer, String> dao = DaoManager.createDao(database, RegisteredPlayer.class);
-      RegisteredPlayer player = dao.queryForId("zonelytester");
+    try (JdbcConnectionSource database = new JdbcConnectionSource(url)) {
+      Dao<RegisteredPlayer, Integer> dao = DaoManager.createDao(database, RegisteredPlayer.class);
+      RegisteredPlayer player = RegisteredPlayerLookup.findByNickname(dao, "whiteeffect");
 
       assertNotNull(player);
-      assertEquals("ZonelyTester", player.getNickname());
-      assertEquals("test-hash", player.getHash());
+      assertEquals(4, player.getId());
+      assertEquals("WhiteEffect", player.getNickname());
+      assertEquals("whiteeffect", player.getLowercaseNickname());
+      assertEquals("site-hash", player.getHash());
+
+      player.setLoginDate(123L);
+      dao.update(player);
+      assertEquals(4, RegisteredPlayerLookup.findByNickname(dao, "WHITEEFFECT").getId());
+      assertNull(RegisteredPlayerLookup.findByNickname(dao, "nonexistent"));
+    }
+    try (Connection connection = DriverManager.getConnection(url);
+        Statement statement = connection.createStatement();
+        java.sql.ResultSet row = statement.executeQuery(
+            "SELECT subname, credit, password, authme_lastlogin FROM userslist WHERE id = 4")) {
+      org.junit.jupiter.api.Assertions.assertTrue(row.next());
+      assertEquals("0", row.getString(1));
+      assertEquals(98825, row.getInt(2));
+      assertEquals("site-hash", row.getString(3));
+      assertEquals(123L, row.getLong(4));
+    }
+  }
+
+  @Test
+  void newGameRegistrationsUseWebsiteDefaultsAndGeneratedId() throws Exception {
+    String url = "jdbc:h2:mem:registration;DB_CLOSE_DELAY=-1";
+    try (Connection connection = DriverManager.getConnection(url);
+        Statement statement = connection.createStatement()) {
+      statement.execute("CREATE TABLE userslist (id INT AUTO_INCREMENT PRIMARY KEY, "
+          + "subname VARCHAR(255) NOT NULL DEFAULT '0', nick VARCHAR(32), password VARCHAR(255) NOT NULL, "
+          + "ip VARCHAR(45), authme_regip VARCHAR(45), authme_created_at BIGINT, authme_lastlogin BIGINT, "
+          + "totp VARCHAR(255), uuid VARCHAR(64), premiumuuid VARCHAR(64), issuedtime BIGINT)");
+    }
+    try (JdbcConnectionSource database = new JdbcConnectionSource(url)) {
+      Dao<RegisteredPlayer, Integer> dao = DaoManager.createDao(database, RegisteredPlayer.class);
+      RegisteredPlayer player = new RegisteredPlayer("NewPlayer", "uuid", "127.0.0.1")
+          .setHash("new-hash");
+      dao.create(player);
+      assertNotNull(player.getId());
+      assertEquals("NewPlayer", dao.queryForId(player.getId()).getNickname());
+      assertEquals(player.getId(), RegisteredPlayerLookup.findByNickname(dao, "newplayer").getId());
+      try (Connection connection = DriverManager.getConnection(url);
+          Statement statement = connection.createStatement();
+          java.sql.ResultSet row = statement.executeQuery(
+              "SELECT subname FROM userslist WHERE id = " + player.getId())) {
+        org.junit.jupiter.api.Assertions.assertTrue(row.next());
+        assertEquals("0", row.getString(1));
+      }
     }
   }
 }

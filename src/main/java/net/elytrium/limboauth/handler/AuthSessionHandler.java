@@ -49,6 +49,7 @@ import net.elytrium.limboauth.event.PostRegisterEvent;
 import net.elytrium.limboauth.event.TaskEvent;
 import net.elytrium.limboauth.migration.MigrationHash;
 import net.elytrium.limboauth.model.RegisteredPlayer;
+import net.elytrium.limboauth.model.RegisteredPlayerLookup;
 import net.elytrium.limboauth.model.SQLRuntimeException;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
@@ -92,7 +93,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
   @Nullable
   private static MigrationHash migrationHash;
 
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
   private final Player proxyPlayer;
   private final LimboAuth plugin;
 
@@ -116,7 +117,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
   private String tempPassword;
   private boolean tokenReceived;
 
-  public AuthSessionHandler(Dao<RegisteredPlayer, String> playerDao, Player proxyPlayer, LimboAuth plugin, @Nullable RegisteredPlayer playerInfo) {
+  public AuthSessionHandler(Dao<RegisteredPlayer, Integer> playerDao, Player proxyPlayer, LimboAuth plugin, @Nullable RegisteredPlayer playerInfo) {
     this.playerDao = playerDao;
     this.proxyPlayer = proxyPlayer;
     this.plugin = plugin;
@@ -214,6 +215,11 @@ public class AuthSessionHandler implements LimboSessionHandler {
         String password = args[1];
         if (this.checkPasswordsRepeat(args) && this.checkPasswordLength(password) && this.checkPasswordStrength(password)) {
           this.saveTempPassword(password);
+          // The website may have registered the nickname after the player connected.
+          if (fetchInfo(this.playerDao, this.proxyPlayer.getUsername()) != null) {
+            this.proxyPlayer.disconnect(sessionExpired);
+            return;
+          }
           RegisteredPlayer registeredPlayer = new RegisteredPlayer(this.proxyPlayer).setPassword(password);
 
           try {
@@ -243,7 +249,7 @@ public class AuthSessionHandler implements LimboSessionHandler {
         String password = args[1];
         this.saveTempPassword(password);
         // The password may have changed on the website since this player entered limbo.
-        this.playerInfo = fetchInfoLowercased(this.playerDao, this.playerInfo.getLowercaseNickname());
+        this.playerInfo = fetchInfoById(this.playerDao, this.playerInfo.getId());
 
         if (this.playerInfo == null) {
           this.proxyPlayer.disconnect(sessionExpired);
@@ -540,26 +546,19 @@ public class AuthSessionHandler implements LimboSessionHandler {
     migrationHash = Settings.IMP.MAIN.MIGRATION_HASH;
   }
 
-  public static boolean checkPassword(String password, RegisteredPlayer player, Dao<RegisteredPlayer, String> playerDao) {
+  public static boolean checkPassword(String password, RegisteredPlayer player, Dao<RegisteredPlayer, Integer> playerDao) {
     String hash = player.getHash();
     boolean isCorrect = AuthMePasswordVerifier.verify(password, hash);
 
     if (!isCorrect && hash != null && password != null && migrationHash != null) {
+      // Keep legacy site hashes intact: the website may not support a rewritten bcrypt hash.
       isCorrect = migrationHash.checkPassword(hash, password);
-      if (isCorrect) {
-        player.setPassword(password);
-        try {
-          playerDao.update(player);
-        } catch (SQLException e) {
-          throw new SQLRuntimeException(e);
-        }
-      }
     }
 
     return isCorrect;
   }
 
-  public static RegisteredPlayer fetchInfo(Dao<RegisteredPlayer, String> playerDao, UUID uuid) {
+  public static RegisteredPlayer fetchInfo(Dao<RegisteredPlayer, Integer> playerDao, UUID uuid) {
     try {
       List<RegisteredPlayer> playerList = playerDao.queryForEq(RegisteredPlayer.PREMIUM_UUID_FIELD, uuid.toString());
       return (playerList != null ? playerList.size() : 0) == 0 ? null : playerList.get(0);
@@ -568,14 +567,21 @@ public class AuthSessionHandler implements LimboSessionHandler {
     }
   }
 
-  public static RegisteredPlayer fetchInfo(Dao<RegisteredPlayer, String> playerDao, String nickname) {
+  public static RegisteredPlayer fetchInfo(Dao<RegisteredPlayer, Integer> playerDao, String nickname) {
     return AuthSessionHandler.fetchInfoLowercased(playerDao, nickname.toLowerCase(Locale.ROOT));
   }
 
-  public static RegisteredPlayer fetchInfoLowercased(Dao<RegisteredPlayer, String> playerDao, String nickname) {
+  public static RegisteredPlayer fetchInfoById(Dao<RegisteredPlayer, Integer> playerDao, Integer id) {
     try {
-      List<RegisteredPlayer> playerList = playerDao.queryForEq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, nickname);
-      return (playerList != null ? playerList.size() : 0) == 0 ? null : playerList.get(0);
+      return playerDao.queryForId(id);
+    } catch (SQLException e) {
+      throw new SQLRuntimeException(e);
+    }
+  }
+
+  public static RegisteredPlayer fetchInfoLowercased(Dao<RegisteredPlayer, Integer> playerDao, String nickname) {
+    try {
+      return RegisteredPlayerLookup.findByNickname(playerDao, nickname);
     } catch (SQLException e) {
       throw new SQLRuntimeException(e);
     }

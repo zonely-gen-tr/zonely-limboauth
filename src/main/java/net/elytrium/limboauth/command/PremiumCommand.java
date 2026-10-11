@@ -34,7 +34,7 @@ import net.kyori.adventure.text.Component;
 public class PremiumCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final String confirmKeyword;
   private final Component notRegistered;
@@ -46,7 +46,7 @@ public class PremiumCommand extends RatelimitedCommand {
   private final Component usage;
   private final Component notPlayer;
 
-  public PremiumCommand(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao) {
+  public PremiumCommand(LimboAuth plugin, Dao<RegisteredPlayer, Integer> playerDao) {
     this.plugin = plugin;
     this.playerDao = playerDao;
 
@@ -64,6 +64,10 @@ public class PremiumCommand extends RatelimitedCommand {
 
   @Override
   public void execute(CommandSource source, String[] args) {
+    if (Settings.IMP.MAIN.PROTECT_WEBSITE_ACCOUNTS) {
+      source.sendMessage(LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.WEBSITE_ACCOUNT_PROTECTED));
+      return;
+    }
     if (source instanceof Player) {
       if (args.length == 2) {
         if (this.confirmKeyword.equalsIgnoreCase(args[1])) {

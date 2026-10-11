@@ -112,6 +112,8 @@ public class Settings extends YamlConfig {
     public boolean TOTP_NEED_PASSWORD = true;
     public boolean REGISTER_NEED_REPEAT_PASSWORD = true;
     public boolean CHANGE_PASSWORD_NEED_OLD_PASSWORD = true;
+    @Comment("Protect Zonely website accounts in the shared userslist table from in-game deletion and premium password clearing.")
+    public boolean PROTECT_WEBSITE_ACCOUNTS = true;
     @Comment("Used in unregister and premium commands.")
     public String CONFIRM_KEYWORD = "confirm";
     @Comment("This prefix will be added to offline mode players nickname")
@@ -452,6 +454,7 @@ public class Settings extends YamlConfig {
 
       public String UNREGISTER_SUCCESSFUL = "{PRFX}{NL}&aSuccessfully unregistered!";
       public String UNREGISTER_USAGE = "{PRFX} Usage: &6/unregister <current password> confirm";
+      public String WEBSITE_ACCOUNT_PROTECTED = "{PRFX} &cThis command is disabled because accounts are managed by the Zonely website.";
 
       public String PREMIUM_SUCCESSFUL = "{PRFX}{NL}&aSuccessfully changed account state to &6PREMIUM&a!";
       public String ALREADY_PREMIUM = "{PRFX} &cYour account is already &6PREMIUM&c!";

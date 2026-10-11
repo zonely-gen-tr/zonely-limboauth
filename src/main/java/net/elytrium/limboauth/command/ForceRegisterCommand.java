@@ -26,6 +26,7 @@ import java.util.Locale;
 import net.elytrium.commons.kyori.serialization.Serializer;
 import net.elytrium.limboauth.LimboAuth;
 import net.elytrium.limboauth.Settings;
+import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 import net.elytrium.limboauth.model.SQLRuntimeException;
 import net.kyori.adventure.text.Component;
@@ -33,7 +34,7 @@ import net.kyori.adventure.text.Component;
 public class ForceRegisterCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final String successful;
   private final String notSuccessful;
@@ -41,7 +42,7 @@ public class ForceRegisterCommand extends RatelimitedCommand {
   private final Component takenNickname;
   private final Component incorrectNickname;
 
-  public ForceRegisterCommand(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao) {
+  public ForceRegisterCommand(LimboAuth plugin, Dao<RegisteredPlayer, Integer> playerDao) {
     this.plugin = plugin;
     this.playerDao = playerDao;
 
@@ -66,7 +67,7 @@ public class ForceRegisterCommand extends RatelimitedCommand {
         }
 
         String lowercaseNickname = nickname.toLowerCase(Locale.ROOT);
-        if (this.playerDao.idExists(lowercaseNickname)) {
+        if (AuthSessionHandler.fetchInfoLowercased(this.playerDao, lowercaseNickname) != null) {
           source.sendMessage(this.takenNickname);
           return;
         }

@@ -36,7 +36,7 @@ import net.kyori.adventure.text.Component;
 public class ChangePasswordCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final boolean needOldPass;
   private final Component notRegistered;
@@ -46,7 +46,7 @@ public class ChangePasswordCommand extends RatelimitedCommand {
   private final Component usage;
   private final Component notPlayer;
 
-  public ChangePasswordCommand(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao) {
+  public ChangePasswordCommand(LimboAuth plugin, Dao<RegisteredPlayer, Integer> playerDao) {
     this.plugin = plugin;
     this.playerDao = playerDao;
 
@@ -93,8 +93,8 @@ public class ChangePasswordCommand extends RatelimitedCommand {
         final String newPassword = needOldPass ? args[1] : args[0];
         final String newHash = RegisteredPlayer.genHash(newPassword);
 
-        UpdateBuilder<RegisteredPlayer, String> updateBuilder = this.playerDao.updateBuilder();
-        updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, usernameLowercase);
+        UpdateBuilder<RegisteredPlayer, Integer> updateBuilder = this.playerDao.updateBuilder();
+        updateBuilder.where().eq(RegisteredPlayer.ID_FIELD, player.getId());
         updateBuilder.updateColumnValue(RegisteredPlayer.HASH_FIELD, newHash);
         updateBuilder.update();
 

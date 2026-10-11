@@ -35,7 +35,7 @@ import net.kyori.adventure.text.Component;
 public class UnregisterCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final String confirmKeyword;
   private final Component notPlayer;
@@ -46,7 +46,7 @@ public class UnregisterCommand extends RatelimitedCommand {
   private final Component usage;
   private final Component crackedCommand;
 
-  public UnregisterCommand(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao) {
+  public UnregisterCommand(LimboAuth plugin, Dao<RegisteredPlayer, Integer> playerDao) {
     this.plugin = plugin;
     this.playerDao = playerDao;
 
@@ -63,6 +63,10 @@ public class UnregisterCommand extends RatelimitedCommand {
 
   @Override
   public void execute(CommandSource source, String[] args) {
+    if (Settings.IMP.MAIN.PROTECT_WEBSITE_ACCOUNTS) {
+      source.sendMessage(LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.WEBSITE_ACCOUNT_PROTECTED));
+      return;
+    }
     if (source instanceof Player) {
       if (args.length == 2) {
         if (this.confirmKeyword.equalsIgnoreCase(args[1])) {
@@ -76,7 +80,7 @@ public class UnregisterCommand extends RatelimitedCommand {
           } else if (AuthSessionHandler.checkPassword(args[0], player, this.playerDao)) {
             try {
               this.plugin.getServer().getEventManager().fireAndForget(new AuthUnregisterEvent(username));
-              this.playerDao.deleteById(usernameLowercase);
+              this.playerDao.deleteById(player.getId());
               this.plugin.removePlayerFromCacheLowercased(usernameLowercase);
               ((Player) source).disconnect(this.successful);
             } catch (SQLException e) {

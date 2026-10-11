@@ -56,11 +56,11 @@ public class AuthListener {
   //private static final MethodHandle LOGIN_FIELD;
 
   private final LimboAuth plugin;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
   private final FloodgateApiHolder floodgateApi;
   private final Component errorOccurred;
 
-  public AuthListener(LimboAuth plugin, Dao<RegisteredPlayer, String> playerDao, FloodgateApiHolder floodgateApi) {
+  public AuthListener(LimboAuth plugin, Dao<RegisteredPlayer, Integer> playerDao, FloodgateApiHolder floodgateApi) {
     this.plugin = plugin;
     this.playerDao = playerDao;
     this.floodgateApi = floodgateApi;
@@ -213,12 +213,15 @@ public class AuthListener {
           event.setGameProfile(event.getOriginalProfile().withId(UUID.fromString(currentUuid)));
         }
       }
-    } else if (event.isOnlineMode()) {
+    } else if (event.isOnlineMode() && !Settings.IMP.MAIN.PROTECT_WEBSITE_ACCOUNTS) {
       try {
-        UpdateBuilder<RegisteredPlayer, String> updateBuilder = this.playerDao.updateBuilder();
-        updateBuilder.where().eq(RegisteredPlayer.LOWERCASE_NICKNAME_FIELD, event.getUsername().toLowerCase(Locale.ROOT));
-        updateBuilder.updateColumnValue(RegisteredPlayer.HASH_FIELD, "");
-        updateBuilder.update();
+        RegisteredPlayer account = AuthSessionHandler.fetchInfo(this.playerDao, event.getUsername());
+        if (account != null) {
+          UpdateBuilder<RegisteredPlayer, Integer> updateBuilder = this.playerDao.updateBuilder();
+          updateBuilder.where().eq(RegisteredPlayer.ID_FIELD, account.getId());
+          updateBuilder.updateColumnValue(RegisteredPlayer.HASH_FIELD, "");
+          updateBuilder.update();
+        }
       } catch (SQLException e) {
         throw new SQLRuntimeException(e);
       }

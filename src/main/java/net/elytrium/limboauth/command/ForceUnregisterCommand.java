@@ -30,6 +30,7 @@ import net.elytrium.commons.velocity.commands.SuggestUtils;
 import net.elytrium.limboauth.LimboAuth;
 import net.elytrium.limboauth.Settings;
 import net.elytrium.limboauth.event.AuthUnregisterEvent;
+import net.elytrium.limboauth.handler.AuthSessionHandler;
 import net.elytrium.limboauth.model.RegisteredPlayer;
 import net.elytrium.limboauth.model.SQLRuntimeException;
 import net.kyori.adventure.text.Component;
@@ -38,14 +39,14 @@ public class ForceUnregisterCommand extends RatelimitedCommand {
 
   private final LimboAuth plugin;
   private final ProxyServer server;
-  private final Dao<RegisteredPlayer, String> playerDao;
+  private final Dao<RegisteredPlayer, Integer> playerDao;
 
   private final Component kick;
   private final String successful;
   private final String notSuccessful;
   private final Component usage;
 
-  public ForceUnregisterCommand(LimboAuth plugin, ProxyServer server, Dao<RegisteredPlayer, String> playerDao) {
+  public ForceUnregisterCommand(LimboAuth plugin, ProxyServer server, Dao<RegisteredPlayer, Integer> playerDao) {
     this.plugin = plugin;
     this.server = server;
     this.playerDao = playerDao;
@@ -64,14 +65,23 @@ public class ForceUnregisterCommand extends RatelimitedCommand {
 
   @Override
   public void execute(CommandSource source, String[] args) {
+    if (Settings.IMP.MAIN.PROTECT_WEBSITE_ACCOUNTS) {
+      source.sendMessage(LimboAuth.getSerializer().deserialize(Settings.IMP.MAIN.STRINGS.WEBSITE_ACCOUNT_PROTECTED));
+      return;
+    }
     if (args.length == 1) {
       String playerNick = args[0];
       String usernameLowercased = playerNick.toLowerCase(Locale.ROOT);
 
       Serializer serializer = LimboAuth.getSerializer();
       try {
+        RegisteredPlayer registeredPlayer = AuthSessionHandler.fetchInfo(this.playerDao, playerNick);
+        if (registeredPlayer == null) {
+          source.sendMessage(serializer.deserialize(MessageFormat.format(this.notSuccessful, playerNick)));
+          return;
+        }
         this.plugin.getServer().getEventManager().fireAndForget(new AuthUnregisterEvent(playerNick));
-        this.playerDao.deleteById(usernameLowercased);
+        this.playerDao.deleteById(registeredPlayer.getId());
         this.plugin.removePlayerFromCacheLowercased(usernameLowercased);
         this.server.getPlayer(playerNick).ifPresent(player -> player.disconnect(this.kick));
         source.sendMessage(serializer.deserialize(MessageFormat.format(this.successful, playerNick)));
