@@ -1,6 +1,6 @@
-# Compatibility verification — 2026-10-10
+# Compatibility verification — 2026-10-11
 
-Local Windows tests use isolated H2 databases and bind to `127.0.0.1`. No production MySQL database is used.
+The automated compatibility suite uses isolated H2 databases and binds to `127.0.0.1`. A separate, explicitly authorized shared-MySQL test is documented below; connection credentials and account backups remain outside Git.
 
 ## Player protocol tests
 
@@ -13,6 +13,19 @@ Each PASS covers plugin startup, registration, wrong-password rejection, reconne
 | 4.2.0 | Temurin 25.0.4.1 | `bfef579` | 1.21.11, 26.1 | PASS |
 
 The persistent manual-test server additionally completed login and transfer to a real vanilla Minecraft 1.21.11 backend. It uses local H2 accounts. Connect with Minecraft 1.21.11 to `localhost:25565` while the local processes are running.
+
+## Shared MySQL / Minecraft 1.20.4 verification
+
+Velocity 3.4.0, matched LimboAPI `e638f4d`, Java 21 and a real Paper 1.20.4 build 499 backend were tested with a Minecraft 1.20.4 protocol client on loopback. The plugin binary is the published `v1.1.15-zonely.2` release, SHA-256 `5695b0a408299f531cf1e105753624c7f3374b99c33c5ba9866a11513bb7fca2`.
+
+The shared `userslist` schema and rows were backed up privately before startup. LimboAuth added eight missing mapped columns. Tests used one generated account and deleted it afterward; existing user credentials were not changed.
+
+- Registration persisted a bcrypt account in the shared MySQL table and transferred to Paper.
+- After the session cache expired, an incorrect password was rejected before backend entry; the correct password reached Paper.
+- Updating only the generated account’s bcrypt password directly in MySQL closed its active game session within the configured check interval.
+- Reconnection with the new password succeeded and reached Paper.
+
+This verifies database sharing and external password-change handling. A protocol client exercised the server flow; no rendered Minecraft screenshots were captured. It does not certify the panel’s own password-reset UI, TOTP, premium or Floodgate flows.
 
 ## Proxy binaries tested
 
@@ -34,4 +47,4 @@ The maximum proxy protocol IDs are 774, 776 and 777 respectively. LimboAPI 1.1.2
 - Local proxy startup exercises fresh H2 table creation/migration; restart/login tests exercise persisted player data.
 - `scripts/build_limboapi.mjs` builds the pinned upstream revision, shares a Minecraft data cache and drains generator output to avoid the Windows pipe-buffer deadlock. Runtime LimboAPI source is unchanged.
 
-These checks do not certify every Minecraft protocol, every Velocity build, production MySQL constraints, premium/Floodgate login or TOTP flows. Upgrade with a test account against your actual backend/database configuration.
+These checks do not certify every Minecraft protocol, every Velocity build, all MySQL schemas/constraints, premium/Floodgate login or TOTP flows. Upgrade with a test account against your actual backend/database configuration.
