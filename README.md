@@ -1,78 +1,77 @@
 <p align="center">
-  <img src="docs/assets/limboauth-cover.svg" alt="Zonely LimboAuth — Velocity için web hesabıyla giriş" width="1200">
+  <img src="docs/assets/limboauth-cover.svg" alt="Zonely LimboAuth — website account login for Velocity" width="1200">
 </p>
 
 <p align="center">
-  <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.3/limboauth-1.1.15-zonely.3.jar">LimboAuth indir</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3">LimboAPI ve paketler</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.3/SHA256SUMS.txt">SHA-256 değerleri</a> · <a href="docs/KURULUM.md">Kurulum rehberi</a>
+  <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.3/limboauth-1.1.15-zonely.3.jar">Download LimboAuth</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3">LimboAPI and packages</a> · <a href="https://github.com/zonely-gen-tr/zonely-limboauth/releases/download/v1.1.15-zonely.3/SHA256SUMS.txt">SHA-256 checksums</a> · <a href="docs/KURULUM.md">Installation guide</a>
 </p>
 
 [![Build and test](https://github.com/zonely-gen-tr/zonely-limboauth/actions/workflows/build.yml/badge.svg)](https://github.com/zonely-gen-tr/zonely-limboauth/actions/workflows/build.yml)
 
-Oyuncu web hesabıyla Minecraft’a da giriş yapsın. **Zonely LimboAuth**, Velocity üzerinde sanal bir Limbo dünyasında kayıt ve giriş işlemlerini yürütür. Zonely / AuthMe’nin ortak `userslist` tablosuyla çalışır; doğrulanan oyuncuyu lobiye aktarır. Giriş aşaması için ayrı bir Paper sunucusu kurmanız gerekmez.
+Let players use their website accounts to log in to Minecraft. **Zonely LimboAuth** handles registration and login in a virtual Limbo world on Velocity. It uses the shared Zonely / AuthMe `userslist` table and transfers authenticated players to the lobby. A separate Paper authentication server is not required.
 
-[Elytrium LimboAuth](https://github.com/Elytrium/LimboAuth) tabanlı bir uyarlamadır; Elytrium’un resmi dağıtımı değildir. Kaynak kod **GNU AGPL v3** lisansıyla paylaşılır.
+This adaptation is based on [Elytrium LimboAuth](https://github.com/Elytrium/LimboAuth) and is distributed independently under **GNU AGPL v3**.
 
-![Giriş ve kayıt: sanal Limbo, lobiye aktarım, süre, parola ve IP sınırları](docs/assets/limboauth-login.svg)
+![Login and registration: virtual Limbo, lobby transfer, timeouts, password rules and IP limits](docs/assets/limboauth-login.svg)
+![Web accounts and sessions: shared userslist, bcrypt, web password changes and cache validation](docs/assets/limboauth-web.svg)
 
-![Web hesabı ve oturumlar: ortak userslist, bcrypt, webden şifre değişikliği ve önbellek doğrulaması](docs/assets/limboauth-web.svg)
+When the web panel writes a new bcrypt hash to `userslist.password`, the active game session is invalidated by the periodic check, which defaults to **5 seconds**. The player then logs in with the new password. No additional webhook or web token is required.
 
-Web paneli yeni bcrypt özetini aynı `userslist.password` alanına yazdığında açık oyun oturumu varsayılan **5 saniyelik kontrolle** kapatılır. Oyuncu yeni şifresiyle yeniden giriş yapar. Ek webhook veya web-token gerekmez.
+![Security and integrations: TOTP, premium accounts, Floodgate, UUID options, password migration and client mode](docs/assets/limboauth-security.svg)
 
-![Güvenlik ve bağlantılar: TOTP, premium, Floodgate, UUID, parola aktarımı ve istemci modu](docs/assets/limboauth-security.svg)
+Floodgate and client mode require their respective software and configuration. Premium login behavior depends on your settings.
 
-Floodgate ve istemci modu bağlantıları ilgili ek yazılımları ve ayarlarını gerektirir. Premium giriş davranışı yapılandırmaya bağlıdır.
+![Administration and customization: databases, admin commands, sessions, Limbo world and messages](docs/assets/limboauth-management.svg)
 
-![Yönetim ve özelleştirme: veritabanları, yönetici komutları, oturumlar, Limbo dünyası ve mesajlar](docs/assets/limboauth-management.svg)
+## Installation
 
-### Kurulum
+1. Download the **LimboAuth JAR** and the **LimboAPI JAR matching your Velocity version** from [Releases](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3).
+2. Place both in Velocity's `plugins/` folder. Keep one JAR per plugin.
+3. Start and stop the proxy once. Configure database and login settings in `plugins/limboauth/config.yml`.
+4. Set the lobby address in `velocity.toml`, restart the proxy and test with a sample account.
 
-1. [Sürüm sayfasından](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3) **LimboAuth JAR’ını** ve kullandığınız Velocity’ye eşleşen **LimboAPI JAR’ını** indirin.
-2. İkisini Velocity’nin `plugins/` klasörüne koyun. Her eklentiden tek JAR bırakın.
-3. Proxy’yi bir kez başlatıp kapatın. `plugins/limboauth/config.yml` içindeki veritabanı ve giriş ayarlarını düzenleyin.
-4. `velocity.toml` içindeki lobi adresini ayarlayın, proxy’yi yeniden başlatın ve bir deneme hesabıyla giriş yapın.
+Install the plugins on **Velocity**. Configure the destination Paper / Spigot lobby separately. The [installation guide](docs/KURULUM.md) includes MySQL examples, column mappings and source-build instructions.
 
-Eklentiler **Velocity’ye kurulur**. Oyuncunun giriş sonrası ulaşacağı Paper / Spigot lobisi ayrı olarak tanımlanır. Ayrıntılı MySQL örneği, kolon eşlemeleri ve kaynak derleme adımları [kurulum rehberinde](docs/KURULUM.md).
-
-| Velocity | LimboAPI dosyası | Java |
+| Velocity | LimboAPI file | Java |
 | --- | --- | --- |
 | 3.4.0 | `limboapi-1.1.27-velocity-3.4.0.jar` | 21 |
 | 3.5.1 | `limboapi-1.1.27-velocity-3.5.1.jar` | 25 |
 | 4.2.0 | `limboapi-1.1.27-velocity-4.2.0.jar` | 25 |
 
-LimboAuth JAR’ı ortaktır; LimboAPI dosyası proxy’ye göre seçilir. Doğrulanan proxy derlemeleri ve Minecraft istemci sürümleri [TESTING.md](TESTING.md) içinde listelenir. **Minecraft Java 1.20.4**, Velocity 3.4.0 + Paper 1.20.4 + ortak MySQL hesabıyla ayrıca test edilmiştir.
+The same LimboAuth JAR is used across these versions. Select LimboAPI for your proxy version. See [TESTING.md](TESTING.md) for verified proxy builds and Minecraft clients. **Minecraft Java 1.20.4** was also tested with Velocity 3.4.0, Paper 1.20.4 and a shared MySQL account.
 
 <details>
-<summary>Oyuncu ve yönetici komutları</summary>
+<summary>Player and administrator commands</summary>
 
-| Oyuncu komutu | İşlev |
+| Player command | Purpose |
 | --- | --- |
-| `/register <şifre> <şifre>` | Hesap oluşturur. |
-| `/login <şifre>` | Hesaba giriş yapar. |
-| `/changepassword <eski> <yeni>` | Parolayı değiştirir. |
-| `/destroysession` | Tekrar giriş oturumunu kapatır. |
-| `/2fa enable [şifre]` | TOTP doğrulamasını açar. |
-| `/2fa disable <kod>` | TOTP doğrulamasını kapatır. |
-| `/premium <şifre> confirm` | Premium hesap modunu etkinleştirir. |
-| `/unregister <şifre> confirm` | Hesabı siler. |
+| `/register <password> <password>` | Create an account. |
+| `/login <password>` | Log in. |
+| `/changepassword <old> <new>` | Change the password. |
+| `/destroysession` | End the remembered login session. |
+| `/2fa enable [password]` | Enable TOTP verification. |
+| `/2fa disable <code>` | Disable TOTP verification. |
+| `/premium <password> confirm` | Enable premium account mode. |
+| `/unregister <password> confirm` | Delete the account. |
 
-| Yönetici komutu | Yetki |
+| Administrator command | Permission |
 | --- | --- |
-| `/forceregister <oyuncu> <şifre>` | `limboauth.admin.forceregister` |
-| `/forceunregister <oyuncu>` | `limboauth.admin.forceunregister` |
-| `/forcechangepassword <oyuncu> <şifre>` | `limboauth.admin.forcechangepassword` |
-| `/forcelogin <oyuncu>` | `limboauth.admin.forcelogin` |
+| `/forceregister <player> <password>` | `limboauth.admin.forceregister` |
+| `/forceunregister <player>` | `limboauth.admin.forceunregister` |
+| `/forcechangepassword <player> <password>` | `limboauth.admin.forcechangepassword` |
+| `/forcelogin <player>` | `limboauth.admin.forcelogin` |
 | `/limboauth reload` | `limboauth.admin.reload` |
 
-Komut erişimleri `main.command-permission-state` ayarlarından düzenlenir. TOTP giriş ekranında `/2fa <kod>` kullanılır.
+Configure command access through `main.command-permission-state`. Use `/2fa <code>` during TOTP login.
 
-Ortak web veritabanında varsayılan `main.protect-website-accounts: true` ayarı `/unregister`, `/forceunregister` ve `/premium` işlemlerini engeller. Eski yinelenen kayıtlar arasında en küçük ID seçilir. [Ortak veritabanı ve parola uyumluluğu](docs/ZONELY_SHARED_DATABASE.md).
+For a shared website database, the default `main.protect-website-accounts: true` setting blocks `/unregister`, `/forceunregister` and `/premium`. If legacy duplicate records exist, the lowest ID is selected. See [shared database and password compatibility](docs/ZONELY_SHARED_DATABASE.md).
 
 </details>
 
-### Dosya doğrulama ve kaynaklar
+## File verification and credits
 
-`limboauth-1.1.15-zonely.3.jar` ve paketlerin SHA-256 değerleri sürüm ekindeki `SHA256SUMS.txt` dosyasında bulunur.
+SHA-256 checksums for `limboauth-1.1.15-zonely.3.jar` and the packages are included in `SHA256SUMS.txt` in the release assets.
 
-[Sürüm dosyaları ve SHA256SUMS](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3) · [Hata bildir](https://github.com/zonely-gen-tr/zonely-limboauth/issues)
+[Release files and checksums](https://github.com/zonely-gen-tr/zonely-limboauth/releases/tag/v1.1.15-zonely.3) · [Report an issue](https://github.com/zonely-gen-tr/zonely-limboauth/issues)
 
-Kod [GNU AGPL v3](LICENSE) kapsamındadır. Elytrium LimboAuth / LimboAPI ve katkıda bulunan geliştiricilerin telif bildirimleri korunur. LimboAPI kaynak arşivleri sürüm eklerinde bulunur. Görsellerdeki [Feather ikonları](docs/assets/FEATHER-LICENSE.txt) MIT lisanslıdır; [üçüncü taraf bildirimleri](docs/THIRD_PARTY_NOTICES.md).
+The source is licensed under [GNU AGPL v3](LICENSE). Copyright notices for Elytrium LimboAuth, LimboAPI and contributors are retained. LimboAPI source archives are included with releases. The [Feather icons](docs/assets/FEATHER-LICENSE.txt) use the MIT license. See [third-party notices](docs/THIRD_PARTY_NOTICES.md).
